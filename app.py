@@ -767,6 +767,14 @@ def parent_delete(parent_id):
         return redirect(url_for("index"))
     flash("验证失败，请确认邮箱地址正确", "error")
     return redirect(url_for("parent_center"))
+
+
+@app.route("/admin/parent/<int:pid>/delete", methods=["POST"])
+@admin_required
+def admin_parent_delete(pid):
+    admin_delete_parent(pid)
+    flash("\u5df2\u5220\u9664\u8be5\u5bb6\u957f", "success")
+    return redirect(url_for("admin_parents"))
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")

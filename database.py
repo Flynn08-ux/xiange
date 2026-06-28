@@ -1246,3 +1246,11 @@ def delete_parent(parent_id, email):
     conn.commit()
     conn.close()
     return n > 0
+
+
+def admin_delete_parent(parent_id):
+    conn = get_db()
+    conn.execute("UPDATE parents SET is_active=0 WHERE id=?", (parent_id,))
+    conn.execute("UPDATE users SET is_active=0 WHERE role='parent' AND ref_id=?", (parent_id,))
+    conn.commit()
+    conn.close()
