@@ -128,8 +128,31 @@ def admin_ctx():
 @app.route("/admin")
 @admin_required
 def admin_dashboard():
-    stats = {"teachers":0,"pending_fees":0,"parents":0,"appointments":0,"paid":0}
-    return render_template("admin_new.html", stats=stats, admin=None)
+    html = "<!DOCTYPE html><html lang=zh-CN><head><meta charset=UTF-8>"
+    html += "<title>弦歌管理后台</title><style>"
+    html += "body{font-family:sans-serif;background:#f5f3f8;padding:20px}"
+    html += "h1{color:#5b3c9e}.nav{display:flex;gap:8px;margin-bottom:24px}"
+    html += ".nav a{padding:6px 14px;border-radius:8px;background:#fff;text-decoration:none;border:1px solid #e0dce6;color:#6b5b7a}"
+    html += ".nav a.active{background:#5b3c9e;color:#fff}"
+    html += ".grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}"
+    html += ".card{background:#fff;border:1px solid #e0dce6;border-radius:12px;padding:20px;text-align:center}"
+    html += ".card .num{font-size:1.6rem;font-weight:800;color:#5b3c9e}"
+    html += ".card .lbl{font-size:.78rem;color:#8b7a9a}"
+    html += "</style></head><body>"
+    html += "<h1>弦歌 · 管理后台</h1>"
+    html += "<div class=nav><a href=/admin class=active>概览</a>"
+    html += "<a href=/admin/teachers>教师</a><a href=/admin/parents>家长</a>"
+    html += "<a href=/admin/appointments>申请</a><a href=/admin/fees>费用</a>"
+    html += "<a href=/admin/blacklist>黑名单</a><a href=/admin/verification>认证</a>"
+    html += "<a href=/admin/qrcodes>收款码</a><a href=/admin/orders>订单</a>"
+    html += "<a href=/admin/admins>管理员</a><a href=/admin/logout>退出</a></div>"
+    html += "<div class=grid>"
+    html += "<div class=card><div class=num>0</div><div class=lbl>认证教师</div></div>"
+    html += "<div class=card><div class=num>0</div><div class=lbl>家长</div></div>"
+    html += "<div class=card><div class=num>0</div><div class=lbl>已成交</div></div>"
+    html += "<div class=card><div class=num>0</div><div class=lbl>管理员</div></div>"
+    html += "</div></body></html>"
+    return html, 200, {"Content-Type": "text/html; charset=utf-8"}
 @app.route("/about")
 def about():
     return render_template("about.html", admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
