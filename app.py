@@ -828,33 +828,20 @@ def admin_parent_reset(pid):
 
 
 # ── Admin CAPTCHA ──
+# ── Admin CAPTCHA (SVG) ──
 @app.route("/admin/captcha")
 def admin_captcha():
-    import io, random
-    try:
-        from PIL import Image, ImageDraw, ImageFont
-        font = ImageFont.load_default()
-        w, h = 160, 50
-        img = Image.new('RGB', (w, h), (248, 245, 249))
-        draw = ImageDraw.Draw(img)
-        code = ''.join(random.choices('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', k=4))
-        session['admin_captcha'] = code
-        for _ in range(3):
-            draw.line([(random.randint(0,w),random.randint(0,h)),(random.randint(0,w),random.randint(0,h))], fill=(200,190,210), width=2)
-        for i, ch in enumerate(code):
-            draw.text((12+i*36, random.randint(8,16)), ch, fill=(80,50,120), font=font)
-        for _ in range(60):
-            draw.point((random.randint(0,w),random.randint(0,h)), fill=(180,170,190))
-        buf = io.BytesIO()
-        img.save(buf, 'PNG'); buf.seek(0)
-        return send_file(buf, mimetype='image/png')
-    except:
-        code = ''.join(random.choices('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', k=4))
-        session['admin_captcha'] = code
-        svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="160" height="50"><rect width="160" height="50" fill="#f8f5f9" rx="8"/><text x="12" y="32" font-size="28" fill="#503078" font-family="monospace" letter-spacing="8">{code}</text></svg>'
-        return svg, 200, {"Content-Type": "image/svg+xml"}
+    import random
+    code = "".join(random.choices("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", k=4))
+    session["admin_captcha"] = code
+    bg = random.choice(["#f0ecf5","#f5f0ec","#ecf0f5"])
+    chars = ""
+    for i, ch in enumerate(code):
+        x = 14 + i * 34
+        chars += f'<text x="{x}" y="34" font-size="26" fill="#4a2d7a" font-family="monospace,sans-serif" font-weight="bold">{ch}</text>'
+    svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="160" height="50"><rect width="160" height="50" fill="{bg}" rx="6"/>{chars}</svg>'
+    return svg, 200, {"Content-Type": "image/svg+xml;charset=utf-8"}
 
-# ── Admin SMS Verify ──
 @app.route("/admin/login/sms", methods=["GET","POST"])
 def admin_sms_verify():
     if "admin_login_id" not in session:
