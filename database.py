@@ -157,13 +157,13 @@ def init_db():
         );
         CREATE TABLE IF NOT EXISTS bought_leads (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            teacher_id INTEGER NOT NULL,
-            parent_id INTEGER NOT NULL,
-            info_fee INTEGER NOT NULL DEFAULT 50,
+            buyer_type TEXT NOT NULL,
+            buyer_id INTEGER NOT NULL,
+            target_type TEXT NOT NULL,
+            target_id INTEGER NOT NULL,
+            contact_fee INTEGER NOT NULL,
             coupon_id INTEGER,
-            paid_at TEXT DEFAULT (datetime('now','localtime')),
-            FOREIGN KEY (teacher_id) REFERENCES teachers(id),
-            FOREIGN KEY (parent_id) REFERENCES parents(id)
+            paid_at TEXT DEFAULT (datetime('now','localtime'))
         );
         CREATE TABLE IF NOT EXISTS lessons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1153,25 +1153,30 @@ def record_payment_refusal(aid):
 
 
 # ── Bought Leads (Teacher buys parent contact) ──
-def buy_lead(teacher_id, parent_id, coupon_id=None):
+def buy_lead(buyer_type, buyer_id, target_type, target_id, calculated_fee, coupon_id=None):
     conn = get_db()
-    fee = 50
     if coupon_id:
-        conn.execute("UPDATE coupons SET used=1,used_at=datetime('now','localtime') WHERE id=? AND teacher_id=? AND used=0", (coupon_id,teacher_id))
-        fee = 0
-    conn.execute("INSERT INTO bought_leads (teacher_id,parent_id,info_fee,coupon_id) VALUES (?,?,?,?)",
-        (teacher_id,parent_id,fee,coupon_id))
+        conn.execute("UPDATE coupons SET used=1,used_at=datetime('now','localtime') WHERE id=? AND used=0", (coupon_id,))
+        calculated_fee = 0
+    conn.execute("INSERT INTO bought_leads (buyer_type,buyer_id,target_type,target_id,contact_fee,coupon_id) VALUES (?,?,?,?,?,?)",
+        (buyer_type,buyer_id,target_type,target_id,calculated_fee,coupon_id))
     conn.commit()
     bid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
     conn.close()
     return bid
 
-def get_bought_leads(teacher_id):
+def get_bought_leads(user_type, user_id):
     conn = get_db()
-    rows = conn.execute("""SELECT b.*,p.parent_name,p.email,p.phone,p.student_name,p.student_grade,
-        p.subjects,p.province,p.city,p.district,p.requirements,p.budget
-        FROM bought_leads b JOIN parents p ON b.parent_id=p.id
-        WHERE b.teacher_id=? ORDER BY b.paid_at DESC""", (teacher_id,)).fetchall()
+    if user_type == "teacher":
+        rows = conn.execute("""SELECT b.*,p.parent_name,p.email,p.phone,p.student_name,p.student_grade,
+            p.subjects,p.province,p.city,p.district,p.requirements,p.budget, 'parent' AS target_name
+            FROM bought_leads b JOIN parents p ON b.target_id=p.id
+            WHERE b.buyer_type='teacher' AND b.buyer_id=? ORDER BY b.paid_at DESC""", (user_id,)).fetchall()
+    else:
+        rows = conn.execute("""SELECT b.*,t.name AS teacher_name,t.email AS teacher_email,t.phone AS teacher_phone,
+            t.subjects,t.province,t.city,t.district,t.education,t.experience,t.ref_rate,t.bio, 'teacher' AS target_name
+            FROM bought_leads b JOIN teachers t ON b.target_id=t.id
+            WHERE b.buyer_type='parent' AND b.buyer_id=? ORDER BY b.paid_at DESC""", (user_id,)).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
@@ -1186,8 +1191,25 @@ def get_parent_listings(exclude_teacher_id=None):
     conn.close()
     return [dict(r) for r in rows]
 
-def has_bought_lead(teacher_id, parent_id):
+def _deprecated_has_bought_lead(teacher_id, parent_id):
     conn = get_db()
     r = conn.execute("SELECT 1 FROM bought_leads WHERE teacher_id=? AND parent_id=?", (teacher_id,parent_id)).fetchone()
+    conn.close()
+    return r is not None
+
+
+def get_teacher_listings(exclude_parent_id=None):
+    conn = get_db()
+    q = "SELECT id,name,subjects,education,university,experience,province,city,district,ref_rate,bio,rating_total,rating_count FROM teachers WHERE is_active=1 AND ref_rate IS NOT NULL"
+    if exclude_parent_id:
+        q += f" AND id NOT IN (SELECT target_id FROM bought_leads WHERE buyer_type='parent' AND buyer_id={exclude_parent_id})"
+    q += " ORDER BY created_at DESC"
+    rows = conn.execute(q).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def has_bought_contact(buyer_type, buyer_id, target_id):
+    conn = get_db()
+    r = conn.execute("SELECT 1 FROM bought_leads WHERE buyer_type=? AND buyer_id=? AND target_id=?", (buyer_type,buyer_id,target_id)).fetchone()
     conn.close()
     return r is not None

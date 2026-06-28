@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block title %}找老师 — 弦歌{% endblock %}{% block content %}
+<div class="center-header">
+    <div><h1>📚 找老师</h1><p style="color:var(--text2);font-size:.9rem">浏览老师信息，看中了付70%课时费购买联系方式</p></div>
+    <div class="center-nav"><a href="/parent/center">家校中心</a><a href="/find-teachers" class="active">找老师</a></div>
+</div>
+<div class="teacher-grid">
+    {% for t in teachers %}
+    <div class="teacher-card" style="text-align:left">
+        <div class="card-avatar">{{ t.name[:1] }}</div>
+        <h3>{{ t.name }}</h3>
+        <p class="card-subjects">{{ t.subjects[:30] }}{% if t.subjects|length>30 %}&hellip;{% endif %}</p>
+        <div class="card-meta">
+            {% if t.province %}<span>{{ t.province }}</span>{% endif %}
+            {% if t.ref_rate %}<span>{{ t.ref_rate }}元/时</span>{% endif %}
+        </div>
+        {% if t.education %}<p class="card-edu">{{ t.education[:20] }}</p>{% endif %}
+        {% if t.university %}<p class="card-edu">{{ t.university[:15] }}</p>{% endif %}
+        <div style="margin-top:10px">
+            <form method="POST" action="/parent/buy-lead/{{ t.id }}">
+                <button type="submit" class="btn btn-primary" style="width:100%;padding:8px;font-size:.82rem;border-radius:8px">
+                    💰 付{{ (t.ref_rate or 100) * 70 // 100 }}元获取联系方式
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">暂无老师信息</div>
+    {% endfor %}
+</div>{% endblock %}

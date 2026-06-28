@@ -563,6 +563,9 @@ def find_students():
     tid = session["ref_id"]
     parents = get_parent_listings(exclude_teacher_id=tid)
     coupons = get_teacher_coupons(tid)
+    # Calculate 70% contact fee for each parent
+    for p in parents:
+        p["contact_fee"] = (p["budget"] or 100) * 70 // 100
     return render_template("find_students.html", parents=parents, coupons=coupons,
                            admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
 
@@ -570,12 +573,15 @@ def find_students():
 @login_required("teacher")
 def buy_lead_route(parent_id):
     tid = session["ref_id"]
-    coupon_id = request.form.get("coupon_id", type=int)
-    if has_bought_lead(tid, parent_id):
+    cid = request.form.get("coupon_id", type=int)
+    # Get parent budget and calculate 70%
+    db = get_db(); p = db.execute("SELECT budget FROM parents WHERE id=?", (parent_id,)).fetchone(); db.close()
+    fee = (p["budget"] or 100) * 70 // 100 if p else 70
+    if has_bought_contact("teacher", tid, parent_id):
         flash("\u60a8\u5df2\u7ecf\u8d2d\u4e70\u8fc7\u8be5\u7ebf\u7d22", "info")
     else:
-        bid = buy_lead(tid, parent_id, coupon_id)
-        flash("\u8d2d\u4e70\u6210\u529f\uff01\u5df2\u83b7\u5f97\u5bb6\u957f\u8054\u7cfb\u65b9\u5f0f", "success")
+        bid = buy_lead("teacher", tid, "parent", parent_id, fee, cid)
+        flash(f"\u8d2d\u4e70\u6210\u529f\uff01\u652f\u4ed98{fee}\u5143\uff08\u7ebf\u7d22\u8d39\u4e3a\u5bb6\u957f\u51fa\u4ef7\u768470%\uff09\uff0c\u5df2\u83b7\u5f97\u8054\u7cfb\u65b9\u5f0f", "success")
     return redirect(url_for("teacher_center"))
 
 @app.route("/bought-leads")
@@ -586,6 +592,29 @@ def bought_leads():
     return render_template("bought_leads.html", leads=leads,
                            admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
 
+
+
+@app.route("/find-teachers")
+@login_required("parent")
+def find_teachers():
+    pid = session["ref_id"]
+    teachers = get_teacher_listings(exclude_parent_id=pid)
+    return render_template("find_teachers.html", teachers=teachers,
+                           admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
+
+@app.route("/parent/buy-lead/<int:teacher_id>", methods=["POST"])
+@login_required("parent")
+def parent_buy_lead(teacher_id):
+    pid = session["ref_id"]
+    fee = 70
+    db = get_db(); t = db.execute("SELECT ref_rate FROM teachers WHERE id=?", (teacher_id,)).fetchone(); db.close()
+    if t and t["ref_rate"]: fee = t["ref_rate"] * 70 // 100
+    if has_bought_contact("parent", pid, teacher_id):
+        flash("\u60a8\u5df2\u7ecf\u8d2d\u4e70\u8fc7\u8be5\u8001\u5e08\u7684\u8054\u7cfb\u65b9\u5f0f", "info")
+    else:
+        bid = buy_lead("parent", pid, "teacher", teacher_id, fee)
+        flash(f"\u8d2d\u4e70\u6210\u529f\uff01\u5df2\u652f\u4ed8{fee}\u5143\uff0c\u5df2\u83b7\u5f97\u8001\u5e08\u8054\u7cfb\u65b9\u5f0f", "success")
+    return redirect(url_for("parent_center"))
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")

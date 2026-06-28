@@ -1,15 +1,9 @@
 {% extends "base.html" %}{% block title %}找学生 — 弦歌{% endblock %}{% block content %}
 <div class="center-header">
-    <div><h1>📋 找学生</h1><p style="color:var(--text2);font-size:.9rem">浏览家长发布的求教需求，看中的花50元购买联系方式</p></div>
+    <div><h1>📋 找学生</h1><p style="color:var(--text2);font-size:.9rem">浏览家长需求，看中了付课时费70%买联系方式</p></div>
     <div class="center-nav"><a href="/teacher/center">家教中心</a><a href="/find-students" class="active">找学生</a><a href="/bought-leads">已购线索</a></div>
 </div>
-
-{% if coupons %}
-<div class="card-section" style="margin-bottom:16px">
-    <p>您有 <strong>{{ coupons|length }}</strong> 张免信息费券可用！</p>
-</div>
-{% endif %}
-
+{% if coupons %}<div class="card-section"><p>您有 <strong>{{ coupons|length }}</strong> 张免信息费券可用！</p></div>{% endif %}
 <div class="teacher-grid">
     {% for p in parents %}
     <div class="teacher-card" style="text-align:left">
@@ -18,24 +12,26 @@
         <p class="card-subjects">{{ p.subjects[:30] }}{% if p.subjects|length>30 %}&hellip;{% endif %}</p>
         <div class="card-meta">
             {% if p.province %}<span>{{ p.province }}</span>{% endif %}
-            {% if p.budget %}<span>出价 {{ p.budget }}元/时</span>{% endif %}
+            {% if p.budget %}<span>预算 {{ p.budget }}元/时</span>{% endif %}
         </div>
         {% if p.requirements %}<p class="card-edu">{{ p.requirements[:35] }}{% if p.requirements|length>35 %}&hellip;{% endif %}</p>{% endif %}
-        <div style="margin-top:10px">
+        <div style="margin:10px 0 0;display:flex;gap:6px;flex-direction:column">
+            <div style="font-size:.82rem;color:var(--text2);text-align:center;padding:4px;background:rgba(91,60,158,0.04);border-radius:8px">
+                联系方式费：<strong style="color:var(--primary);font-size:1rem">{{ p.contact_fee }}元</strong>
+                <span style="font-size:.7rem">（预算的70%）</span>
+            </div>
             <form method="POST" action="/buy-lead/{{ p.id }}">
                 {% if coupons %}
-                <select name="coupon_id" style="font-size:.75rem;padding:3px 6px;margin-bottom:4px;width:100%">
-                    <option value="">50元购买</option>
-                    {% for c in coupons %}<option value="{{ c.id }}">使用免信息费券</option>{% endfor %}
+                <select name="coupon_id" style="font-size:.75rem;padding:4px 8px;margin-bottom:4px;width:100%;border-radius:8px;border:1px solid var(--border)">
+                    <option value="">支付 {{ p.contact_fee }}元</option>
+                    {% for c in coupons %}<option value="{{ c.id }}">使用免信息费券（免费）</option>{% endfor %}
                 </select>
                 {% endif %}
                 <button type="submit" class="btn btn-primary" style="width:100%;padding:8px;font-size:.82rem;border-radius:8px">
-                    {% if coupons %}选择优惠方式{% else %}💰 50元购买联系方式{% endif %}
+                    {% if coupons %}选择支付方式{% else %}💰 支付 {{ p.contact_fee }}元 获取联系方式{% endif %}
                 </button>
             </form>
         </div>
     </div>
-    {% else %}
-    <div class="empty-state">目前还没有家长发布需求</div>
-    {% endfor %}
+    {% else %}<div class="empty-state">目前还没有家长发布需求</div>{% endfor %}
 </div>{% endblock %}

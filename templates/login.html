@@ -1,11 +1,32 @@
 {% extends "base.html" %}{% block title %}登录 — 弦歌{% endblock %}{% block content %}
 <div class="login-page">
-    <h1 class="page-title">登录</h1>
+    <h1 class="page-title" style="text-align:center">登录弦歌</h1>
+    <div class="role-tabs">
+        <button class="role-tab active" data-role="teacher" onclick="switchRole('teacher')">我是老师</button>
+        <button class="role-tab" data-role="parent" onclick="switchRole('parent')">我是家长</button>
+    </div>
     <form class="login-form" method="POST">
+        <input type="hidden" name="role" id="loginRole" value="teacher">
         <div class="form-group"><label>用户名</label><input type="text" name="username" required placeholder="输入用户名"></div>
         <div class="form-group"><label>密码</label><input type="password" name="password" required placeholder="输入密码"></div>
-        <button type="submit" class="btn btn-primary btn-large" style="width:100%">登录</button>
-        <p class="login-hint">没有账号？<a href="/register">注册成为老师</a></p>
-        <p class="login-hint"><a href="/forgot-password" style="color:var(--text2)">忘记密码？</a></p>
+        <button type="submit" class="btn btn-primary btn-large">登录</button>
+        <p class="login-hint" id="loginHint">还没有账号？<a href="/register">注册成为老师</a></p>
     </form>
-</div>{% endblock %}
+</div>
+<script>
+function switchRole(role){
+    document.querySelectorAll('.role-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelector(`.role-tab[data-role="${role}"]`).classList.add('active');
+    document.getElementById('loginRole').value = role;
+    document.getElementById('loginHint').innerHTML = role === 'teacher' ?
+        '还没有账号？<a href="/register">注册成为老师</a>' :
+        '还没有账号？<a href="/teachers">先浏览老师</a>';
+}
+</script>
+<style>
+.role-tabs{display:flex;gap:8px;margin-bottom:20px;justify-content:center}
+.role-tab{padding:10px 24px;border-radius:12px;border:2px solid var(--border);background:var(--bg);cursor:pointer;font-size:.9rem;font-weight:500;color:var(--text2);transition:all .2s;flex:1;max-width:200px}
+.role-tab.active{border-color:var(--primary);background:rgba(91,60,158,0.06);color:var(--primary);font-weight:600}
+.role-tab:hover{border-color:var(--primary-light)}
+</style>
+{% endblock %}

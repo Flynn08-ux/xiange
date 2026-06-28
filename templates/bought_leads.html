@@ -1,34 +1,35 @@
 {% extends "base.html" %}{% block title %}已购线索 — 弦歌{% endblock %}{% block content %}
 <div class="center-header">
     <div><h1>📞 已购线索</h1></div>
-    <div class="center-nav"><a href="/teacher/center">家教中心</a><a href="/find-students">找学生</a><a href="/bought-leads" class="active">已购线索</a></div>
+    <div class="center-nav">
+        {% if role == 'teacher' %}<a href="/teacher/center">家教中心</a><a href="/find-students">找学生</a><a href="/bought-leads" class="active">已购线索</a>
+        {% else %}<a href="/parent/center">家校中心</a><a href="/find-teachers">找老师</a><a href="/bought-leads" class="active">已购线索</a>{% endif %}
+    </div>
 </div>
-
 <div class="appointment-list">
     {% for l in leads %}
     <div class="appointment-card card-paid">
         <div class="apt-header">
-            <span class="apt-status label-paid"><strong>{{ l.student_name }}同学</strong></span>
-            <span class="apt-date">购买时间: {{ l.paid_at[:10] if l.paid_at else '' }}</span>
+            <span class="apt-status label-paid"><strong>{% if l.parent_name %}{{ l.student_name }}同学{% else %}{{ l.teacher_name }}老师{% endif %}</strong></span>
+            <span class="apt-date">购买: {{ l.paid_at[:10] if l.paid_at else '' }}</span>
         </div>
         <div class="apt-body">
             <div class="apt-detail"><strong>科目：</strong>{{ l.subjects }}</div>
-            <div class="apt-detail"><strong>年级：</strong>{{ l.student_grade or '未填写' }}</div>
-            <div class="apt-detail"><strong>出价预算：</strong>{{ l.budget or '面议' }}元/时</div>
+            {% if l.student_grade %}<div class="apt-detail"><strong>年级：</strong>{{ l.student_grade }}</div>{% endif %}
+            {% if l.budget %}<div class="apt-detail"><strong>预算：</strong>{{ l.budget }}元/时</div>{% endif %}
+            {% if l.ref_rate %}<div class="apt-detail"><strong>课时费：</strong>{{ l.ref_rate }}元/时</div>{% endif %}
+            {% if l.education %}<div class="apt-detail"><strong>教育背景：</strong>{{ l.education }}</div>{% endif %}
+            {% if l.university %}<div class="apt-detail"><strong>毕业院校：</strong>{{ l.university }}</div>{% endif %}
             {% if l.requirements %}<div class="apt-detail"><strong>要求：</strong>{{ l.requirements }}</div>{% endif %}
-            <div class="apt-contact" style="margin-top:12px">
-                <h3>📩 家长联系方式</h3>
-                <p><strong>家长：</strong>{{ l.parent_name }}</p>
-                <p><strong>邮箱：</strong><a href="mailto:{{ l.email }}">{{ l.email }}</a></p>
-                {% if l.phone %}<p><strong>电话：</strong>{{ l.phone }}</p>{% endif %}
-                {% if l.province or l.city %}<p><strong>地区：</strong>{{ l.province or '' }}{{ l.city or '' }}{{ l.district or '' }}</p>{% endif %}
+            <div class="apt-detail"><strong>支付线索费：</strong>{{ l.contact_fee }}元</div>
+            <div class="apt-contact">
+                <h3>📩 {% if l.parent_name %}家长{% else %}老师{% endif %}联系方式</h3>
+                <p><strong>{% if l.parent_name %}家长{% else %}老师{% endif %}：</strong>{{ l.parent_name or l.teacher_name }}</p>
+                <p><strong>邮箱：</strong><a href="mailto:{{ l.email or l.teacher_email }}">{{ l.email or l.teacher_email }}</a></p>
+                {% if l.phone or l.teacher_phone %}<p><strong>电话：</strong>{{ l.phone or l.teacher_phone }}</p>{% endif %}
             </div>
         </div>
     </div>
-    {% else %}
-    <div class="empty-state" style="padding:32px">
-        <p>您还没有购买任何线索</p>
-        <a href="/find-students" class="btn btn-primary" style="margin-top:12px">去找学生</a>
-    </div>
+    {% else %}<div class="empty-state"><p>暂无已购线索</p><a href="{% if role=='teacher' %}/find-students{% else %}/find-teachers{% endif %}" class="btn btn-primary" style="margin-top:12px">去{% if role=='teacher' %}找学生{% else %}找老师{% endif %}</a></div>
     {% endfor %}
 </div>{% endblock %}
