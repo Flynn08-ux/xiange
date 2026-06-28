@@ -433,10 +433,6 @@ def admin_required(f):
         return f(*a,**k)
     return wrapper
 
-@app.route("/admin")
-@admin_required
-def admin_dashboard():
-    return "OK"
 @app.route("/admin/teachers")
 @admin_required
 def admin_teachers():
