@@ -554,6 +554,38 @@ def security_headers(response):
 init_db()
 init_admin()
 
+
+
+# ── Find Students (Teacher browses parent listings) ──
+@app.route("/find-students")
+@login_required("teacher")
+def find_students():
+    tid = session["ref_id"]
+    parents = get_parent_listings(exclude_teacher_id=tid)
+    coupons = get_teacher_coupons(tid)
+    return render_template("find_students.html", parents=parents, coupons=coupons,
+                           admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
+
+@app.route("/buy-lead/<int:parent_id>", methods=["POST"])
+@login_required("teacher")
+def buy_lead_route(parent_id):
+    tid = session["ref_id"]
+    coupon_id = request.form.get("coupon_id", type=int)
+    if has_bought_lead(tid, parent_id):
+        flash("\u60a8\u5df2\u7ecf\u8d2d\u4e70\u8fc7\u8be5\u7ebf\u7d22", "info")
+    else:
+        bid = buy_lead(tid, parent_id, coupon_id)
+        flash("\u8d2d\u4e70\u6210\u529f\uff01\u5df2\u83b7\u5f97\u5bb6\u957f\u8054\u7cfb\u65b9\u5f0f", "success")
+    return redirect(url_for("teacher_center"))
+
+@app.route("/bought-leads")
+@login_required("teacher")
+def bought_leads():
+    tid = session["ref_id"]
+    leads = get_bought_leads(tid)
+    return render_template("bought_leads.html", leads=leads,
+                           admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
+
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")

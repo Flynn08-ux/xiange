@@ -155,6 +155,16 @@ def init_db():
             verified INTEGER DEFAULT 0,
             created_at TEXT DEFAULT (datetime('now','localtime'))
         );
+        CREATE TABLE IF NOT EXISTS bought_leads (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            teacher_id INTEGER NOT NULL,
+            parent_id INTEGER NOT NULL,
+            info_fee INTEGER NOT NULL DEFAULT 50,
+            coupon_id INTEGER,
+            paid_at TEXT DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY (teacher_id) REFERENCES teachers(id),
+            FOREIGN KEY (parent_id) REFERENCES parents(id)
+        );
         CREATE TABLE IF NOT EXISTS lessons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             appointment_id INTEGER NOT NULL,
@@ -255,7 +265,7 @@ def get_teacher_by_id(tid):
 
 def get_all_teachers(sort="newest", search="", subject="", city=""):
     conn = get_db()
-    q = "SELECT * FROM teachers WHERE is_active=1 AND info_fee_paid=1"
+    q = "SELECT * FROM teachers WHERE is_active=1 "
     p = []
     if search:
         q += " AND (name LIKE ? OR subjects LIKE ? OR bio LIKE ? OR province LIKE ? OR city LIKE ?)"
@@ -402,7 +412,7 @@ def get_admin_stats():
     conn = get_db()
     s = lambda q: conn.execute(q).fetchone()[0]
     stats = {
-        "teachers": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 AND info_fee_paid=1"),
+        "teachers": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 "),
         "pending_fees": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 AND info_fee_paid=0"),
         "teachers_total": s("SELECT COUNT(*) FROM teachers WHERE is_active=1"),
         "parents": s("SELECT COUNT(*) FROM parents WHERE is_active=1"),
@@ -607,8 +617,8 @@ def get_teacher_coupons(tid):
 # ── Stats ──
 def get_stats():
     conn = get_db()
-    total = conn.execute("SELECT COUNT(*) FROM teachers WHERE is_active=1 AND info_fee_paid=1").fetchone()[0]
-    provinces = conn.execute("SELECT COUNT(DISTINCT province) FROM teachers WHERE is_active=1 AND province!='' AND info_fee_paid=1").fetchone()[0]
+    total = conn.execute("SELECT COUNT(*) FROM teachers WHERE is_active=1 ").fetchone()[0]
+    provinces = conn.execute("SELECT COUNT(DISTINCT province) FROM teachers WHERE is_active=1 AND province!='' ").fetchone()[0]
     conn.close()
     return {"total":total,"provinces":provinces}
 
@@ -784,7 +794,7 @@ def get_admin_stats():
     conn = get_db()
     s = lambda q: conn.execute(q).fetchone()[0]
     stats = {
-        "teachers": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 AND info_fee_paid=1"),
+        "teachers": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 "),
         "pending_fees": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 AND info_fee_paid=0"),
         "teachers_total": s("SELECT COUNT(*) FROM teachers WHERE is_active=1"),
         "parents": s("SELECT COUNT(*) FROM parents WHERE is_active=1"),
@@ -989,8 +999,8 @@ def get_teacher_coupons(tid):
 # ── Stats ──
 def get_stats():
     conn = get_db()
-    total = conn.execute("SELECT COUNT(*) FROM teachers WHERE is_active=1 AND info_fee_paid=1").fetchone()[0]
-    provinces = conn.execute("SELECT COUNT(DISTINCT province) FROM teachers WHERE is_active=1 AND province!='' AND info_fee_paid=1").fetchone()[0]
+    total = conn.execute("SELECT COUNT(*) FROM teachers WHERE is_active=1 ").fetchone()[0]
+    provinces = conn.execute("SELECT COUNT(DISTINCT province) FROM teachers WHERE is_active=1 AND province!='' ").fetchone()[0]
     conn.close()
     return {"total":total,"provinces":provinces}
 
@@ -1140,3 +1150,44 @@ def record_payment_refusal(aid):
     conn.commit(); conn.close()
     return comp, p[0] if p else 0
 
+
+
+# ── Bought Leads (Teacher buys parent contact) ──
+def buy_lead(teacher_id, parent_id, coupon_id=None):
+    conn = get_db()
+    fee = 50
+    if coupon_id:
+        conn.execute("UPDATE coupons SET used=1,used_at=datetime('now','localtime') WHERE id=? AND teacher_id=? AND used=0", (coupon_id,teacher_id))
+        fee = 0
+    conn.execute("INSERT INTO bought_leads (teacher_id,parent_id,info_fee,coupon_id) VALUES (?,?,?,?)",
+        (teacher_id,parent_id,fee,coupon_id))
+    conn.commit()
+    bid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+    conn.close()
+    return bid
+
+def get_bought_leads(teacher_id):
+    conn = get_db()
+    rows = conn.execute("""SELECT b.*,p.parent_name,p.email,p.phone,p.student_name,p.student_grade,
+        p.subjects,p.province,p.city,p.district,p.requirements,p.budget
+        FROM bought_leads b JOIN parents p ON b.parent_id=p.id
+        WHERE b.teacher_id=? ORDER BY b.paid_at DESC""", (teacher_id,)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def get_parent_listings(exclude_teacher_id=None):
+    conn = get_db()
+    # Parents not yet bought by this teacher
+    q = "SELECT id,student_name,student_grade,subjects,province,city,district,requirements,budget,created_at FROM parents WHERE is_active=1"
+    if exclude_teacher_id:
+        q += f" AND id NOT IN (SELECT parent_id FROM bought_leads WHERE teacher_id={exclude_teacher_id})"
+    q += " ORDER BY created_at DESC"
+    rows = conn.execute(q).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def has_bought_lead(teacher_id, parent_id):
+    conn = get_db()
+    r = conn.execute("SELECT 1 FROM bought_leads WHERE teacher_id=? AND parent_id=?", (teacher_id,parent_id)).fetchone()
+    conn.close()
+    return r is not None
