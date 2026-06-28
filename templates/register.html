@@ -49,7 +49,7 @@ function sendSms(){
     const btn=document.querySelector('#sendSmsBtn');
     btn.disabled=true;btn.textContent='发送中...';
     fetch('/api/send-sms',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'phone='+encodeURIComponent(phone)})
-    .then(r=>r.json()).then(d=>{alert(d.message||'已发送');btn.textContent='已发送';setTimeout(()=>{btn.disabled=false;btn.textContent='重新发送'},30000)})
+    .then(r=>r.json()).then(d=>{alert(d.message||'\n\n请查看弹窗中的验证码，输入到验证码框');btn.textContent='已发送';setTimeout(()=>{btn.disabled=false;btn.textContent='重新发送'},30000)})
     .catch(()=>{btn.disabled=false;btn.textContent='发送失败'});
 }
 </script>

@@ -25,6 +25,11 @@ from universities import UNIVERSITIES
 app = Flask(__name__)
 app.secret_key = os.urandom(24).hex()
 app.permanent_session_lifetime = timedelta(hours=1)
+@app.before_request
+def refresh_session():
+    """每次请求刷新会话过期时间"""
+    if session.get("user_id") or session.get("admin_id"):
+        session.permanent = True
 
 SUBJECTS = [
     "\u8bed\u6587","\u6570\u5b66","\u82f1\u8bed","\u7269\u7406","\u5316\u5b66","\u751f\u7269",
@@ -63,7 +68,7 @@ def api_send_sms():
         return jsonify({"error": "手机号无效"}), 400
     code = str(random.randint(100000, 999999))
     save_sms_code(phone, code)
-    return jsonify({"message": f"验证码已发送到 {phone[:3]}****{phone[-4:]}", "code": code})
+    return jsonify({"message": f"【测试模式】验证码 {code}，已发送到 {phone[:3]}****{phone[-4:]}"})
 @app.route("/api/regions")
 def api_regions():
     return jsonify(region_info())
