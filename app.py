@@ -847,63 +847,6 @@ def admin_captcha():
     svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="160" height="50"><rect width="160" height="50" fill="{bg}" rx="6"/>{chars}</svg>'
     return svg, 200, {"Content-Type": "image/svg+xml;charset=utf-8"}
 
-@app.route("/admin/login/sms", methods=["GET","POST"])
-def admin_sms_verify():
-    if "admin_login_id" not in session:
-        return redirect(url_for("admin_login"))
-    if request.method == "POST":
-        sms = request.form.get("sms_code","").strip()
-        a = get_admin(session["admin_login_id"])
-        if a and a.get("phone") and verify_sms_code(a["phone"], sms):
-            session["admin_id"] = session.pop("admin_login_id")
-            session.permanent = True
-            flash(f"\u6b22\u8fce\u56de\u6765\uff0c{a['name']}", "success")
-            return redirect(url_for("admin_dashboard"))
-        flash("\u77ed\u4fe1\u9a8c\u8bc1\u7801\u9519\u8bef", "error")
-    return render_template("admin_sms.html", test_code=session.get("admin_test_code",""), phone=session.get("admin_dual_phone_1",""))
-
-
-@app.route("/admin/login/dual-sms", methods=["GET","POST"])
-def admin_dual_sms_verify():
-    if "admin_login_id" not in session:
-        return redirect(url_for("admin_login"))
-    if request.method == "POST":
-        c1 = request.form.get("code1","").strip()
-        c2 = request.form.get("code2","").strip()
-        p1 = session.get("admin_dual_phone_1","")
-        p2 = session.get("admin_dual_phone_2","")
-        if verify_sms_code(p1, c1) and verify_sms_code(p2, c2):
-            session["admin_id"] = session.pop("admin_login_id")
-            session.pop("admin_dual_phone_1",None); session.pop("admin_dual_phone_2",None)
-            session.permanent = True
-            flash("\u53cc\u91cd\u9a8c\u8bc1\u901a\u8fc7\uff0c\u6b22\u8fce\u56de\u6765","success")
-            return redirect(url_for("admin_dashboard"))
-        flash("\u9a8c\u8bc1\u7801\u9519\u8bef\uff0c\u8bf7\u91cd\u8bd5","error")
-    return render_template("admin_dual_sms.html",
-        phone1=session.get("admin_dual_phone_1",""),
-        phone2=session.get("admin_dual_phone_2",""),
-        test_code1=session.get("admin_test_code1",""),
-        test_code2=session.get("admin_test_code2",""))
-
-
-@app.route("/admin/login/resend-sms", methods=["POST"])
-def admin_resend_sms():
-    if "admin_login_id" not in session:
-        return jsonify({"status":"error","message":"登录超时"})
-    if session.get("admin_dual_phone_1"):
-        p1,p2 = session["admin_dual_phone_1"],session["admin_dual_phone_2"]
-        c1 = str(random.randint(100000,999999))
-        c2 = str(random.randint(100000,999999))
-        save_sms_code(p1,c1); save_sms_code(p2,c2)
-        return jsonify({"status":"ok","msg":"已重新发送","test_code1":c1,"test_code2":c2})
-    a = get_admin(session["admin_login_id"])
-    if a and a.get("phone"):
-        code = str(random.randint(100000,999999))
-        save_sms_code(a["phone"],code)
-        return jsonify({"status":"ok","msg":"已重新发送","test_code":code})
-    return jsonify({"status":"error","message":"发送失败"})
-
-
 @app.route("/admin/login/key", methods=["GET","POST"])
 def admin_login_key():
     from database import get_db
