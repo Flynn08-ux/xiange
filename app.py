@@ -88,6 +88,10 @@ def teacher_detail(tid):
     return render_template("teacher.html", teacher=teacher, subjects=subjects,
                            admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
 
+@app.route("/health")
+def health():
+    return "OK", 200
+
 @app.route("/about")
 def about():
     return render_template("about.html", admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
