@@ -906,6 +906,7 @@ def admin_resend_sms():
 
 @app.route("/admin/login/key", methods=["GET","POST"])
 def admin_login_key():
+    from database import get_db
     if "admin_login_id" not in session:
         return redirect(url_for("admin_login"))
     if request.method == "POST":
