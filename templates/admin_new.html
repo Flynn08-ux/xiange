@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>弦歌管理后台</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f3f8;color:#1a1520;padding:20px}
+h1{font-size:1.5rem;color:#5b3c9e;margin-bottom:20px}
+.nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.nav a{padding:6px 14px;border-radius:8px;font-size:.82rem;color:#6b5b7a;background:#fff;text-decoration:none;border:1px solid #e0dce6}
+.nav a:hover{background:#e8e2f0}
+.nav a.active{background:#5b3c9e;color:#fff;border-color:#5b3c9e}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.card{background:#fff;border:1px solid #e0dce6;border-radius:12px;padding:20px;text-align:center}
+.card .num{font-size:1.6rem;font-weight:800;color:#5b3c9e}
+.card .lbl{font-size:.78rem;color:#8b7a9a;margin-top:4px}
+p{font-size:.85rem;color:#6b5b7a;margin-top:20px}
+</style></head><body>
+<h1>弦歌 · 管理后台</h1>
+<div class="nav">
+<a href="/admin" class="active">概览</a>
+<a href="/admin/teachers">教师</a>
+<a href="/admin/parents">家长</a>
+<a href="/admin/appointments">申请</a>
+<a href="/admin/fees">费用</a>
+<a href="/admin/blacklist">黑名单</a>
+<a href="/admin/verification">认证</a>
+<a href="/admin/qrcodes">收款码</a>
+<a href="/admin/orders">订单</a>
+<a href="/admin/admins">管理员</a>
+<a href="/admin/logout">退出</a>
+</div>
+<div class="grid">
+<div class="card"><div class="num">{{ stats.teachers if stats else 0 }}</div><div class="lbl">认证教师</div></div>
+<div class="card"><div class="num">{{ stats.pending_fees if stats else 0 }}</div><div class="lbl">待付费</div></div>
+<div class="card"><div class="num">{{ stats.parents if stats else 0 }}</div><div class="lbl">家长</div></div>
+<div class="card"><div class="num">{{ (stats.paid or 0) + (stats.completed or 0) }}</div><div class="lbl">已成交</div></div>
+<div class="card"><div class="num">{{ (stats.revenue or 0) + (stats.fee_revenue or 0) }}</div><div class="lbl">总收入</div></div>
+<div class="card"><div class="num">{{ stats.pending_earnings if stats else 0 }}</div><div class="lbl">待提现</div></div>
+<div class="card"><div class="num">{{ stats.blacklist if stats else 0 }}</div><div class="lbl">黑名单</div></div>
+<div class="card"><div class="num">{{ stats.admins if stats else 0 }}/3</div><div class="lbl">管理员</div></div>
+</div>
+<p>弦歌 &mdash; 连接好老师和好家庭</p>
+</body></html>

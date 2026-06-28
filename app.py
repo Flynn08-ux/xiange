@@ -404,9 +404,14 @@ def admin_required(f):
 @app.route("/admin")
 @admin_required
 def admin_dashboard():
-    auto_pay_overdue()
-    stats = get_admin_stats()
-    return render_template("admin_dashboard.html", stats=stats, admin=admin_ctx())
+    import traceback
+    try:
+        auto_pay_overdue()
+        stats = get_admin_stats()
+    except Exception as e:
+        stats = {"teachers":0,"pending_fees":0,"parents":0,"appointments":0,"paid":0,"completed":0,"refunded":0,"revenue":0,"fee_revenue":0,"pending_earnings":0,"admins":0,"blacklist":0,"compensation":0}
+        print(f"Admin dashboard error: {e}")
+    return render_template("admin_new.html", stats=stats, admin=admin_ctx())
 
 @app.route("/admin/teachers")
 @admin_required
