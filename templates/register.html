@@ -1,0 +1,44 @@
+{% extends "base.html" %}{% block title %}注册成为老师 — 弦歌{% endblock %}{% block content %}
+<h1 class="page-title">注册成为老师</h1>
+<p class="page-subtitle">填写信息，支付信息费后即可开始接单</p>
+<form class="register-form" method="POST">
+    <div class="form-section"><h2>创建账号</h2>
+        <div class="form-row"><div class="form-group"><label>用户名 *</label><input type="text" name="username" value="{{ data.username if data else '' }}" required></div>
+        <div class="form-group"><label>密码 *</label><input type="password" name="password" value="{{ data.password if data else '' }}" required minlength="4"></div></div>
+    </div>
+    <div class="form-section"><h2>基本信息</h2>
+        <div class="form-group"><label>姓名 *</label><input type="text" name="name" value="{{ data.name if data else '' }}" required></div>
+        <div class="form-row"><div class="form-group"><label>邮箱 *</label><input type="email" name="email" value="{{ data.email if data else '' }}" required></div>
+        <div class="form-group"><label>手机</label><input type="tel" name="phone" value="{{ data.phone if data else '' }}"></div></div>
+    </div>
+    <div class="form-section"><h2>教学信息</h2>
+        <div class="form-group"><label>授课科目 *</label>
+            <div class="checkbox-grid">{% for s in subjects %}<label class="checkbox-item"><input type="checkbox" name="subjects" value="{{ s }}" {% if data and s in data.get('subjects','') %}checked{% endif %}>{{ s }}</label>{% endfor %}</div>
+        </div>
+        <div class="form-row"><div class="form-group"><label>毕业院校</label>
+            <select name="university" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg)">
+                <option value="">请选择或手填</option>{% for u in unis %}<option value="{{ u }}" {% if data and data.university==u %}selected{% endif %}>{{ u }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group"><label>教育背景</label><input type="text" name="education" value="{{ data.education if data else '' }}" placeholder="如：XX专业 本科"></div></div>
+        <div class="form-row"><div class="form-group"><label>教学经验</label><input type="text" name="experience" value="{{ data.experience if data else '' }}" placeholder="如：3年家教经验"></div>
+        <div class="form-group"><label>参考课时费</label><input type="number" name="ref_rate" value="{{ data.ref_rate if data else '' }}" min="0" step="10" placeholder="选填，最终由家长出价"></div></div>
+    </div>
+    <div class="form-section"><h2>时间与地点</h2>
+        <div class="form-row form-row-3">
+            <div class="form-group"><label>省份 *</label><select name="province" required onchange="updateCities()"><option value="">请选择</option>{% for p in provinces %}<option value="{{ p }}" {% if data and data.province==p %}selected{% endif %}>{{ p }}</option>{% endfor %}</select></div>
+            <div class="form-group"><label>城市</label><select name="city" id="city" onchange="updateDistricts()"><option value="">请先选省份</option></select></div>
+            <div class="form-group"><label>区/县</label><select name="district" id="district"><option value="">请先选城市</option></select></div>
+        </div>
+        <div class="form-group"><label>可授课时间</label><input type="text" name="available" value="{{ data.available if data else '' }}" placeholder="如：工作日晚上、周末"></div>
+    </div>
+    <div class="form-section"><h2>个人简介</h2>
+        <div class="form-group"><textarea name="bio" rows="4" placeholder="教学风格、擅长领域、过往成绩等">{{ data.bio if data else '' }}</textarea></div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary btn-large">提交注册（50元信息费）</button></div>
+</form>
+<script>
+let _r=null;async function gr(){if(_r)return _r;const x=await fetch('/api/regions');_r=await x.json();return _r}
+async function updateCities(){const p=document.querySelector('[name=province]').value;const cs=document.querySelector('[name=city]');const ds=document.querySelector('[name=district]');cs.innerHTML='<option value="">请选择城市</option>';ds.innerHTML='<option value="">请先选择城市</option>';if(!p)return;const r=await gr();const i=r[p];if(!i)return;if(i.type==='municipality'){cs.innerHTML='<option value="">直辖市</option>';updateDistricts()}else if(i.cities){cs.innerHTML='<option value="">请选择城市</option>'+Object.keys(i.cities).map(c=>`<option value="${c}">${c}</option>`).join('')}}
+async function updateDistricts(){const p=document.querySelector('[name=province]').value;const c=document.querySelector('[name=city]').value;const ds=document.querySelector('[name=district]');ds.innerHTML='<option value="">请选择区/县</option>';if(!p)return;const r=await gr();const i=r[p];if(!i)return;let d=[];if(i.type==='municipality')d=i.districts||[];else if(c&&i.cities&&i.cities[c])d=i.cities[c].districts||[];ds.innerHTML='<option value="">请选择区/县</option>'+d.map(x=>`<option value="${x}">${x}</option>`).join('')}
+</script>
+{% endblock %}

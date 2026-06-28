@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% block title %}上课二维码{% endblock %}{% block content %}
+<div class="login-page">
+    <div class="login-form" style="text-align:center">
+        <h2 style="font-size:1.3rem;margin-bottom:8px">📚 第{{ lesson.lesson_number }}节课</h2>
+        <p style="color:var(--text2);margin-bottom:16px">{{ teacher.name }} · {{ lesson.subject }}</p>
+        
+        {% if lesson.status == 'pending' %}
+        <div style="margin:16px 0">
+            <p style="font-size:.82rem;color:var(--text2);margin-bottom:8px">请老师用手机扫描下方二维码确认上课</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={{ verify_url|urlencode }}"
+                 alt="QR Code" style="border:2px solid var(--border);border-radius:12px;max-width:250px">
+        </div>
+        <p style="font-size:.78rem;color:var(--text2);word-break:break-all">验证链接：<a href="{{ verify_url }}">{{ verify_url }}</a></p>
+        <div class="apt-status label-pending" style="margin-top:12px;font-size:.9rem">⏳ 等待老师扫码确认</div>
+        
+        {% else %}
+        <div style="margin:20px 0;padding:16px;background:#ecfdf5;border-radius:12px">
+            <p style="font-size:1.2rem;color:var(--success)">✅ 已确认上课</p>
+            <p style="font-size:.82rem;color:var(--text2)">确认时间：{{ lesson.verified_at[:16] if lesson.verified_at else '' }}</p>
+        </div>
+        {% endif %}
+        
+        <a href="javascript:history.back()" class="btn btn-secondary" style="margin-top:12px">← 返回</a>
+    </div>
+</div>{% endblock %}

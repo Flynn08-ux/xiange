@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}申请状态 — 弦歌{% endblock %}
+{% block content %}
+
+<div class="appointment-page">
+    <h1 class="page-title">试课申请状态</h1>
+
+    <div class="status-timeline">
+        <div class="status-step {% if apt.status in ['pending','accepted','paid','completed'] %}active{% endif %}"><div class="step-dot"></div><div class="step-label">已提交</div></div>
+        <div class="status-step {% if apt.status in ['accepted','paid','completed'] %}active{% endif %}"><div class="step-dot"></div><div class="step-label">老师已接受</div></div>
+        <div class="status-step {% if apt.status in ['paid','completed'] %}active{% endif %}"><div class="step-dot"></div><div class="step-label">已付款</div></div>
+        <div class="status-step {% if apt.status == 'completed' %}active{% endif %}"><div class="step-dot"></div><div class="step-label">试课完成</div></div>
+    </div>
+
+    <div class="apt-card-large">
+        <div class="apt-banner label-{{ apt.status }}">
+            {% if apt.status == 'pending' %}等待老师确认中…
+            {% elif apt.status == 'declined' %}老师暂不接受，无费用
+            {% elif apt.status == 'accepted' %}老师已接受，请支付课时费
+            {% elif apt.status == 'paid' %}已付款，老师已获得您的联系方式
+            {% elif apt.status == 'completed' %}试课已完成，费用已结算
+            {% elif apt.status == 'refunded' %}已全额退款
+            {% endif %}
+        </div>
+
+        <div class="apt-info">
+            <div class="apt-info-row"><strong>老师：</strong>{{ teacher.name }}</div>
+            <div class="apt-info-row"><strong>科目：</strong>{{ apt.subject }}</div>
+            <div class="apt-info-row"><strong>您的出价：</strong>{{ apt.budget }}元/小时</div>
+            <div class="apt-info-row"><strong>学生：</strong>{{ parent.student_name }}{% if parent.student_grade %}（{{ parent.student_grade }}）{% endif %}</div>
+        </div>
+
+        {% if apt.status == 'accepted' %}
+        <div class="apt-payment">
+            <h3>支付课时费</h3>
+            <p>支付后，老师的联系方式将展示给您。试课不满意可全额退款。</p>
+            <form method="POST" action="/parent/appointment/{{ apt.id }}/pay">
+                <button type="submit" class="btn btn-primary btn-large">确认支付 {{ apt.budget }} 元</button>
+            </form>
+        </div>
+        {% elif apt.status == 'paid' %}
+        <div class="apt-contact">
+            <h3>老师联系方式</h3>
+            <p>邮箱：<a href="mailto:{{ teacher.email }}">{{ teacher.email }}</a></p>
+            {% if teacher.phone %}<p>电话：{{ teacher.phone }}</p>{% endif %}
+        </div>
+        <div class="apt-satisfaction">
+            <p>试课是否满意？</p>
+            <form method="POST" action="/parent/appointment/{{ apt.id }}/satisfied" style="display:inline">
+                <button type="submit" class="btn btn-primary">满意，确认付款</button>
+            </form>
+            <form method="POST" action="/parent/appointment/{{ apt.id }}/refund" style="display:inline">
+                <button type="submit" class="btn btn-outline">不满意，申请退款</button>
+            </form>
+        </div>
+        {% elif apt.status == 'completed' %}
+        <div class="apt-done"><p>感谢您使用弦歌！试课已完成，费用已结算给老师。</p></div>
+        {% elif apt.status == 'refunded' %}
+        <div class="apt-done"><p>已全额退款。希望下次能为您找到更合适的老师。</p><a href="/teachers" class="btn btn-primary">继续找老师</a></div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

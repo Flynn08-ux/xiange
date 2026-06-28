@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% block title %}{{ teacher.name }} — 弦歌{% endblock %}{% block content %}
+<div class="teacher-profile">
+    <div class="profile-header">
+        <div class="profile-avatar">{{ teacher.name[:1] }}</div>
+        <div><h1>{{ teacher.name }}</h1>
+            <p class="profile-meta">{% if teacher.province %}{{ teacher.province }}{% endif %}{% if teacher.city %} · {{ teacher.city }}{% endif %}{% if teacher.district %} · {{ teacher.district }}{% endif %}</p>
+        </div>
+    </div>
+    <div class="profile-body">
+        <div class="profile-section"><h2>授课科目</h2><div class="tag-list">{% for s in subjects %}<span class="tag">{{ s }}</span>{% endfor %}</div></div>
+        {% if teacher.university %}<div class="profile-section"><h2>毕业院校</h2><p>{{ teacher.university }}</p></div>{% endif %}
+        {% if teacher.education %}<div class="profile-section"><h2>教育背景</h2><p>{{ teacher.education }}</p></div>{% endif %}
+        {% if teacher.experience %}<div class="profile-section"><h2>教学经验</h2><p>{{ teacher.experience }}</p></div>{% endif %}
+        {% if teacher.available %}<div class="profile-section"><h2>可授课时间</h2><p>{{ teacher.available }}</p></div>{% endif %}
+        {% if teacher.bio %}<div class="profile-section"><h2>个人简介</h2><p class="profile-bio">{{ teacher.bio }}</p></div>{% endif %}
+        {% if teacher.ref_rate %}<div class="profile-section rate-section"><h2>参考课时费</h2><p class="rate">{{ teacher.ref_rate }} 元/时 <span class="rate-note">（最终由您出价）</span></p></div>{% endif %}
+        {% if teacher.rating_count and teacher.rating_count > 0 %}
+        <div class="profile-section"><h2>评分</h2>{% if teacher.rating_count > 0 %}<span style="font-size:1.1rem;color:#ff9500">★</span> <span style="font-size:0.85rem;color:var(--text2)">{{ teacher.rating_count }}条评价</span>{% endif %}
+        {% endif %}
+    </div>
+    <div class="profile-actions">
+        <a href="/apply/{{ teacher.id }}" class="btn btn-primary btn-large">申请试课</a>
+        <a href="/teachers" class="btn btn-secondary">← 返回</a>
+    </div>
+</div>{% endblock %}

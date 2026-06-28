@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block title %}申请试课{% endblock %}{% block content %}
+<h1 class="page-title">申请试课</h1>
+<p class="page-subtitle">向 <strong>{{ teacher.name }}</strong> 申请试课，填写信息并出价</p>
+<form class="register-form" method="POST">
+    <div class="form-section"><h2>创建账号</h2>
+        <div class="form-row"><div class="form-group"><label>用户名 *</label><input type="text" name="username" value="{{ data.username if data else '' }}" required></div>
+        <div class="form-group"><label>密码 *</label><input type="password" name="password" value="{{ data.password if data else '' }}" required minlength="4"></div></div>
+    </div>
+    <div class="form-section"><h2>家长信息</h2>
+        <div class="form-group"><label>您的姓名 *</label><input type="text" name="parent_name" value="{{ data.parent_name if data else '' }}" required></div>
+        <div class="form-row"><div class="form-group"><label>邮箱 *</label><input type="email" name="email" value="{{ data.email if data else '' }}" required></div>
+        <div class="form-group"><label>手机</label><input type="tel" name="phone" value="{{ data.phone if data else '' }}"></div></div>
+    </div>
+    <div class="form-section"><h2>学生信息</h2>
+        <div class="form-row"><div class="form-group"><label>学生姓名 *</label><input type="text" name="student_name" value="{{ data.student_name if data else '' }}" required></div>
+        <div class="form-group"><label>年级</label><select name="student_grade"><option value="">请选择</option>{% for g in grades %}<option value="{{ g }}" {% if data and data.student_grade==g %}selected{% endif %}>{{ g }}</option>{% endfor %}</select></div></div>
+        <div class="form-group"><label>需辅导科目 *</label><input type="text" name="subjects" value="{{ data.subjects if data else '' }}" required placeholder="如：数学、英语"></div>
+    </div>
+    <div class="form-section"><h2>出价与要求</h2>
+        <div class="form-group"><label>您的出价（元/小时）*</label>
+            <input type="number" name="budget" value="{{ data.budget if data else '' }}" min="0" step="10" required placeholder="您愿意支付的课时费">
+            {% if teacher.ref_rate %}<p class="form-note">老师参考价: {{ teacher.ref_rate }}元/时</p>{% endif %}
+        </div>
+        <div class="form-group"><label>具体要求</label><textarea name="requirements" rows="3">{{ data.requirements if data else '' }}</textarea></div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary btn-large">提交申请</button></div>
+</form>{% endblock %}

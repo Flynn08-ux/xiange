@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+teachers.db
+cloudflared
+.DS_Store
+*.tgz
+teachers.db
+uploads/
+cloudflared
+uploads/
+teachers.db
+__pycache__/
+*.pyc
+.DS_Store

@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% block title %}弦歌 — 家教对接平台{% endblock %}{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>找到最适合你的家教老师</h1>
+        <p>弦歌连接优秀兼职教师和有需要的家庭。家长出价，老师接单，满意付款。</p>
+        <div class="hero-actions">
+            <a href="/teachers" class="btn btn-primary">浏览老师</a>
+            <a href="/register" class="btn btn-outline">成为老师</a>
+        </div>
+    </div>
+</section>
+<section class="stats-bar">
+    <div class="stat-item"><span class="stat-number">{{ stats.total }}</span><span class="stat-label">认证教师</span></div>
+    <div class="stat-item"><span class="stat-number">{{ stats.provinces }}</span><span class="stat-label">覆盖省份</span></div>
+    <div class="stat-item"><span class="stat-number">{{ subjects|length }}</span><span class="stat-label">可选科目</span></div>
+</section>
+<section class="section">
+    <h2 class="section-title">推荐老师</h2>
+    <div class="teacher-grid">
+        {% for t in teachers %}
+        <a href="/teacher/{{ t.id }}" class="teacher-card">
+            <div class="card-avatar">{{ t.name[:1] }}</div>
+            <h3>{{ t.name }}</h3>
+            <p class="card-subjects">{{ t.subjects[:30] }}{% if t.subjects|length > 30 %}&hellip;{% endif %}</p>
+            <div class="card-meta">
+                {% if t.province %}<span>{{ t.province }}</span>{% endif %}
+                {% if t.ref_rate %}<span>{{ t.ref_rate }}元/时</span>{% endif %}
+            </div>
+        </a>
+        {% else %}<p class="empty-state">还没有认证老师 <a href="/register">成为第一个</a></p>{% endfor %}
+    </div>
+    <div class="section-footer"><a href="/teachers" class="btn btn-secondary">查看全部</a></div>
+</section>{% endblock %}

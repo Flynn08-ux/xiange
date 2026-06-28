@@ -1,0 +1,43 @@
+{% extends "base.html" %}{% block title %}上传认证材料{% endblock %}{% block content %}
+<h1 class="page-title">上传认证材料</h1>
+<p class="page-subtitle">上传学校证明材料（学生证、录取通知书或在校证书）供管理员认证</p>
+
+<form method="POST" enctype="multipart/form-data" class="register-form" style="max-width:500px;margin:0 auto 32px">
+    <div class="form-group">
+        <label>材料类型</label>
+        <select name="doc_type">
+            <option value="school">学校证明材料</option>
+            <option value="campus_card">学生证/校园卡</option>
+            <option value="certificate">获奖证书</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>上传文件（jpg/png/pdf）</label>
+        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+            <p style="color:var(--text2);font-size:1.1rem;margin-bottom:4px">📁 点击上传</p>
+            <p style="color:var(--text2);font-size:.8rem">支持 jpg、png、pdf 格式</p>
+            <input type="file" id="fileInput" name="file" accept="image/*,.pdf" required onchange="showFileName(this)">
+            <p id="fileName" style="font-size:.82rem;margin-top:6px;color:var(--primary)"></p>
+        </div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">上传</button></div>
+</form>
+
+<h2 class="section-title">上传记录</h2>
+<div class="feedback-list">
+    {% for doc in docs %}
+    <div class="feedback-item">
+        <strong>{{ '学校证明' if doc.doc_type=='school' else '学生证' if doc.doc_type=='campus_card' else '证书' }}</strong>
+        <span class="label-{{ doc.status }}">{% if doc.status=='pending' %}审核中{% elif doc.status=='approved' %}已通过{% else %}未通过{% endif %}</span>
+        <p>{{ doc.filename }}</p>
+        <span class="fb-date">{{ doc.created_at[:16] }}</span>
+    </div>
+    {% else %}<p class="empty-state" style="text-align:left;padding:12px">暂未上传材料</p>{% endfor %}
+</div>
+
+<script>
+function showFileName(input) {
+    document.getElementById('fileName').textContent = input.files[0] ? input.files[0].name : '';
+}
+</script>
+{% endblock %}

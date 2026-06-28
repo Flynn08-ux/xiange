@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% block title %}上课记录{% endblock %}{% block content %}
+<h1 class="page-title">上课记录</h1>
+<p class="page-subtitle">{{ teacher.name }} · {{ apt.subject }}</p>
+
+<div class="stats-mini">
+    <div class="mini-stat"><div class="ms-num">{{ stats.total }}</div><div class="ms-lbl">总课时</div></div>
+    <div class="mini-stat"><div class="ms-num">{{ stats.completed }}</div><div class="ms-lbl">已完成</div></div>
+    <div class="mini-stat"><div class="ms-num">{{ stats.total - stats.completed }}</div><div class="ms-lbl">待确认</div></div>
+</div>
+
+<div class="appointment-list">
+    {% for l in lessons %}
+    <div class="appointment-card card-{% if l.status == 'completed' %}paid{% else %}pending{% endif %}">
+        <div class="apt-header">
+            <span class="apt-status label-{% if l.status == 'completed' %}paid{% else %}pending{% endif %}">
+                第{{ l.lesson_number }}节课
+            </span>
+            <span class="apt-date">{{ l.created_at[:16] if l.created_at else '' }}</span>
+        </div>
+        <div class="apt-body">
+            <div class="apt-detail">
+                状态：{% if l.status == 'completed' %}✅ 已确认上课{% else %}⏳ 待确认{% endif %}
+            </div>
+            {% if l.status == 'completed' and l.verified_at %}
+            <div class="apt-detail" style="font-size:.78rem;color:var(--text2)">确认时间：{{ l.verified_at[:16] }}</div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">暂无上课记录</div>
+    {% endfor %}
+</div>
+{% endblock %}

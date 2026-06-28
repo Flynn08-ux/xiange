@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}我的申请 — 弦歌{% endblock %}
+{% block content %}
+
+<div class="dashboard-header">
+    <h1>我的试课申请</h1>
+    <p>家长：{{ parent.parent_name }} | 邮箱：{{ parent.email }}</p>
+</div>
+
+<div class="appointment-list">
+    {% for apt in appointments %}
+    <a href="/appointment/{{ apt.id }}" class="appointment-card card-{{ apt.status }}">
+        <div class="apt-header">
+            <span class="apt-status label-{{ apt.status }}">
+                {% if apt.status == 'pending' %}待确认
+                {% elif apt.status == 'accepted' %}待付款
+                {% elif apt.status == 'paid' %}已付款
+                {% elif apt.status == 'completed' %}已完成
+                {% elif apt.status == 'declined' %}已拒绝
+                {% elif apt.status == 'refunded' %}已退款
+                {% endif %}
+            </span>
+            <span class="apt-date">{{ apt.created_at[:10] }}</span>
+        </div>
+        <div class="apt-body">
+            <div class="apt-detail"><strong>老师：</strong>{{ apt.teacher_name }}</div>
+            <div class="apt-detail"><strong>科目：</strong>{{ apt.subject }}</div>
+            <div class="apt-detail"><strong>费用：</strong>{{ apt.amount }}元</div>
+        </div>
+    </a>
+    {% else %}
+    <div class="empty-state">还没有提交任何申请</div>
+    {% endfor %}
+</div>
+
+{% endblock %}

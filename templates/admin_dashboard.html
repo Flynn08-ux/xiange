@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}管理后台{% endblock %}{% block content %}
+<div class="admin-bar"><h1>管理后台</h1>
+    <div class="admin-nav">
+        <a href="/admin" class="active">概览</a><a href="/admin/teachers">教师</a><a href="/admin/parents">家长</a>
+        <a href="/admin/appointments">申请</a><a href="/admin/fees">费用</a><a href="/admin/blacklist">黑名单</a>
+        <a href="/admin/admins">管理员</a><a href="/admin/logout">退出</a>
+    </div>
+</div>
+<div class="admin-stats-grid">
+    <div class="admin-stat-card"><div class="stat-num">{{ stats.teachers }}</div><div class="stat-lbl">认证教师</div></div>
+    <div class="admin-stat-card"><div class="stat-num">{{ stats.pending_fees }}</div><div class="stat-lbl">待付费</div></div>
+    <div class="admin-stat-card"><div class="stat-num">{{ stats.parents }}</div><div class="stat-lbl">家长</div></div>
+    <div class="admin-stat-card"><div class="stat-num">{{ stats.paid + stats.completed }}</div><div class="stat-lbl">已成交</div></div>
+    <div class="admin-stat-card"><div class="stat-num">{{ stats.revenue + stats.fee_revenue }}</div><div class="stat-lbl">总收入(元)</div></div>
+    <div class="admin-stat-card"><div class="stat-num">{{ stats.pending_earnings }}</div><div class="stat-lbl">待提现</div></div>
+    <div class="admin-stat-card"><div class="stat-num">{{ stats.blacklist }}</div><div class="stat-lbl">黑名单</div></div>
+    <div class="admin-stat-card"><div class="stat-num">{{ stats.admins }}/3</div><div class="stat-lbl">管理员</div></div>
+</div>{% endblock %}

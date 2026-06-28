@@ -1,0 +1,71 @@
+{% extends "base.html" %}{% block title %}签署合同{% endblock %}{% block content %}
+<div class="contract-box">
+    <h2>📋 家教服务合同</h2>
+    <div class="contract-text">
+        <p style="text-align:center;font-weight:600">甲方（家长）：<span class="sign-line">{{ apt.parent_name or '' }}</span></p>
+        <p style="text-align:center;font-weight:600">乙方（老师）：{{ teacher.name }}</p>
+        <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+<p>为保障甲乙双方的合法权益，明确双方的权利义务，经双方协商一致，自愿签订本合同。</p>
+<p>一、甲方自愿聘请乙方为家庭教师，对甲方子女进行课业辅导。甲方承诺：本次聘请纯粹出于求学目的，绝无任何伤害乙方人身安全之意。</p>
+<p>二、甲方应如实告知学生的学习情况，并提供适宜的教学环境和合理待遇。甲方应确保教学场所的安全。</p>
+<p>三、乙方有权按约定获得劳动报酬，并有权拒绝合同外的额外要求。</p>
+<p>四、甲方保证不对乙方进行任何形式的骚扰、威胁或人身攻击，否则甲方承担全部法律责任。</p>
+<p>五、本合同自双方签字之日起生效，至试课结束或双方协商解除之日终止。</p>
+        <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+        <p style="text-align:right">甲方签字：</p>
+    </div>
+    
+    {% if contract %}
+    <div style="text-align:center;padding:16px;background:#ecfdf5;border-radius:12px;margin:16px 0">
+        <p style="color:var(--success);font-weight:600">✅ 合同已签署</p>
+        <img src="{{ contract.parent_signature }}" style="max-width:300px;border:1px solid var(--border);border-radius:8px;margin:10px 0">
+    </div>
+    {% else %}
+    <form method="POST" action="/contract/{{ apt.id }}/sign" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>请在下框手写签名</label>
+            <canvas id="sigCanvas" class="signature-pad" width="500" height="180"></canvas>
+            <input type="hidden" name="signature" id="signatureData">
+            <button type="button" onclick="clearSig()" class="btn-small" style="margin-top:4px">清除重签</button>
+        </div>
+        <div class="form-group">
+            <label>上传学生校园卡/学生证（验证身份）</label>
+            <div class="upload-zone" onclick="document.getElementById('sidInput').click()">
+                <p style="color:var(--text2);font-size:.9rem">点击上传学生证或校园卡照片</p>
+                <input type="file" id="sidInput" name="student_id" accept="image/*,.pdf">
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-large" onclick="return saveSig()">确认签署</button>
+        </div>
+    </form>
+    {% endif %}
+</div>
+
+<script>
+function initCanvas() {
+    const canvas = document.getElementById('sigCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#2d1f1a';
+    canvas.addEventListener('mousedown', e => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
+    canvas.addEventListener('mousemove', e => { if(drawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); }});
+    canvas.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); const t = e.touches[0]; const r = canvas.getBoundingClientRect(); drawing = true; ctx.beginPath(); ctx.moveTo(t.clientX - r.left, t.clientY - r.top); });
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); if(drawing) { const t = e.touches[0]; const r = canvas.getBoundingClientRect(); ctx.lineTo(t.clientX - r.left, t.clientY - r.top); ctx.stroke(); }});
+    canvas.addEventListener('touchend', () => drawing = false);
+}
+function clearSig() {
+    const c = document.getElementById('sigCanvas');
+    if(c) c.getContext('2d').clearRect(0, 0, c.width, c.height);
+}
+function saveSig() {
+    const c = document.getElementById('sigCanvas');
+    const data = c.toDataURL('image/png');
+    document.getElementById('signatureData').value = data;
+    return true;
+}
+initCanvas();
+</script>
+{% endblock %}

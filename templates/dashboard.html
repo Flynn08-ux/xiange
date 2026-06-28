@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}教师后台 — {{ teacher.name }}{% endblock %}
+{% block content %}
+
+<div class="dashboard-header">
+    <h1>{{ teacher.name }} 的后台</h1>
+    <p>邮箱：{{ teacher.email }} | 手机：{{ teacher.phone or '未填写' }}</p>
+    <p>
+        授课：
+        {% for s in subjects %}
+        <span class="tag">{{ s }}</span>
+        {% endfor %}
+        {% if teacher.ref_rate %} | 参考课时费：{{ teacher.ref_rate }}元/时{% endif %}
+    </p>
+    <p class="dash-note">家长出价后你来决定是否接受。不接受不收费。</p>
+</div>
+
+<h2 class="section-title">收到的试课申请</h2>
+
+<div class="appointment-list">
+    {% for apt in appointments %}
+    <div class="appointment-card card-{{ apt.status }}">
+        <div class="apt-header">
+            <span class="apt-status label-{{ apt.status }}">
+                {% if apt.status == 'pending' %}待确认
+                {% elif apt.status == 'accepted' %}已接受（待付款）
+                {% elif apt.status == 'paid' %}已付款
+                {% elif apt.status == 'completed' %}已完成
+                {% elif apt.status == 'declined' %}已拒绝
+                {% elif apt.status == 'refunded' %}已退款
+                {% else %}{{ apt.status }}
+                {% endif %}
+            </span>
+            <span class="apt-date">{{ apt.created_at[:10] }}</span>
+        </div>
+        <div class="apt-body">
+            <div class="apt-detail"><strong>学生：</strong>{{ apt.student_name }} {% if apt.student_grade %}({{ apt.student_grade }}){% endif %}</div>
+            <div class="apt-detail"><strong>科目：</strong>{{ apt.subject }}</div>
+            <div class="apt-detail"><strong>家长出价：</strong><span class="highlight-price">{{ apt.budget }}元/小时</span></div>
+            <div class="apt-detail"><strong>要求：</strong>{{ apt.requirements or '无特殊要求' }}</div>
+
+            {% if apt.status == 'paid' %}
+            <div class="apt-contact">
+                <h3>家长联系方式（已付费，已公开）</h3>
+                <p>家长：{{ apt.parent_name }}</p>
+                <p>邮箱：<a href="mailto:{{ apt.parent_email }}">{{ apt.parent_email }}</a></p>
+                <p>电话：{{ apt.parent_phone or '未填写' }}</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="apt-actions">
+            {% if apt.status == 'pending' %}
+            <form method="POST" action="/appointment/{{ apt.id }}/accept" style="display:inline">
+                <button type="submit" class="btn btn-primary">接受（{{ apt.budget }}元/时）</button>
+            </form>
+            <form method="POST" action="/appointment/{{ apt.id }}/decline" style="display:inline">
+                <button type="submit" class="btn btn-secondary">拒绝</button>
+            </form>
+            {% elif apt.status == 'paid' %}
+            <form method="POST" action="/appointment/{{ apt.id }}/complete" style="display:inline">
+                <button type="submit" class="btn btn-primary">标记完成</button>
+            </form>
+            <form method="POST" action="/appointment/{{ apt.id }}/refund" style="display:inline">
+                <button type="submit" class="btn btn-outline">退款</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">还没有收到试课申请</div>
+    {% endfor %}
+</div>
+
+{% endblock %}

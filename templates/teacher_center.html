@@ -1,0 +1,103 @@
+{% extends "base.html" %}{% block title %}家教中心 — {{ teacher.name }}
+<!-- Settings -->
+<div class="card-section">
+    <h3>⚙️ 设置</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="/upload/teacher/{{ teacher.id }}" class="btn btn-outline" style="font-size:.82rem">上传学校认证</a>
+        <a href="/settings/payment" class="btn btn-outline" style="font-size:.82rem">收款账户绑定</a>
+    </div>
+</div>
+
+{% endblock %}{% block content %}
+<div class="center-header">
+    <div><h1>{{ teacher.name }} 的家教中心</h1>
+        <p style="color:var(--text-secondary);font-size:0.9rem">已完成 {{ stats.completed }} 次家教 | 评分数 {{ teacher.rating_count }}</p>
+    </div>
+    <div class="center-nav"><a href="/teacher/center" class="active">总览</a><a href="/teachers">找家长</a></div>
+</div>
+
+<div class="stats-mini">
+    <div class="mini-stat"><div class="ms-num">{{ stats.earnings_pending }}</div><div class="ms-lbl">可提现(元)</div></div>
+    <div class="mini-stat"><div class="ms-num">{{ stats.earnings_total }}</div><div class="ms-lbl">已提现(元)</div></div>
+    <div class="mini-stat"><div class="ms-num">{{ stats.completed }}</div><div class="ms-lbl">已完成</div></div>
+    <div class="mini-stat"><div class="ms-num">{{ stats.coupons }}</div><div class="ms-lbl">优惠券</div></div>
+</div>
+
+<!-- Withdrawal -->
+<div class="card-section">
+    <h3>提现</h3>
+    <p class="form-note">可提现金额：<strong>{{ available }}元</strong>（每完成5次家教可获得免信息费券）</p>
+    <form method="POST" action="/teacher/withdraw" class="inline-form">
+        <input type="number" name="amount" min="1" max="{{ available }}" required placeholder="提现金额">
+        <select name="account_type"><option value="wechat">微信</option><option value="alipay">支付宝</option></select>
+        <input type="text" name="account_info" required placeholder="账号">
+        <button type="submit" class="btn btn-primary">申请提现</button>
+    </form>
+</div>
+
+<!-- Appointments -->
+<h2 class="section-title">试课申请</h2>
+<div class="appointment-list">
+    {% for a in appointments %}
+    <div class="appointment-card card-{{ a.status }}">
+        <div class="apt-header">
+            <span class="apt-status label-{{ a.status }}">{% if a.status=='pending' %}待确认{% elif a.status=='accepted' %}已接受{% elif a.status=='paid' %}已付款{% elif a.status=='completed' %}已完成{% elif a.status=='declined' %}已拒绝{% elif a.status=='refunded' %}已退款{% endif %}</span>
+            <span class="apt-date">{{ a.created_at[:10] }}</span>
+        </div>
+        <div class="apt-body">
+            <div class="apt-detail"><strong>学生：</strong>{{ a.student_name }}{% if a.student_grade %} ({{ a.student_grade }}){% endif %}</div>
+            <div class="apt-detail"><strong>科目：</strong>{{ a.subject }}</div>
+            <div class="apt-detail"><strong>家长出价：</strong><span class="highlight-price">{{ a.budget }}元/时</span></div>
+            <div class="apt-detail"><strong>要求：</strong>{{ a.requirements or '无' }}</div>
+            {% if a.status == 'paid' %}
+            <div class="apt-contact"><h3>家长联系方式</h3><p>家长：{{ a.parent_name }}</p><p>邮箱：<a href="mailto:{{ a.parent_email }}">{{ a.parent_email }}</a></p>{% if a.parent_phone %}<p>电话：{{ a.parent_phone }}</p>{% endif %}</div>
+            {% endif %}
+        </div>
+        <div class="apt-actions">
+            {% if a.status == 'pending' %}
+            <form method="POST" action="/appointment/{{ a.id }}/accept" style="display:inline"><button class="btn btn-primary">接受 ({{ a.budget }}元)</button></form>
+            <form method="POST" action="/appointment/{{ a.id }}/decline" style="display:inline"><button class="btn btn-secondary">拒绝</button></form>
+            {% elif a.status == 'paid' %}
+            <a href="/lesson/list/{{ a.id }}" class="btn btn-outline">查看上课记录</a>
+            <form method="POST" action="/appointment/{{ a.id }}/complete" style="display:inline"><button class="btn btn-primary">完成</button></form>
+            <form method="POST" action="/appointment/{{ a.id }}/refund" style="display:inline"><button class="btn btn-outline">退款</button></form>
+            <form method="POST" action="/appointment/{{ a.id }}/refuse-payment" style="display:inline">
+                <input type="hidden" name="teacher_id" value="{{ teacher.id }}">
+                <button class="btn btn-danger">家长拒绝支付 → 申请补偿</button>
+            </form>
+            {% elif a.status == 'completed' %}
+            <form method="POST" action="/teacher/feedback/{{ a.id }}" class="inline-form">
+                <select name="rating"><option value="5">好评</option><option value="4">4分</option><option value="3">3分</option><option value="2">2分</option><option value="1">差评</option></select>
+                <input type="text" name="content" placeholder="评价家长…" style="flex:1">
+                <button type="submit" class="btn-small">提交</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}<div class="empty-state">暂无试课申请</div>{% endfor %}
+</div>
+
+<!-- Feedback -->
+<h2 class="section-title">收到的评价</h2>
+<div class="feedback-list">
+    {% for f in feedback %}
+    <div class="feedback-item"><strong>{{ f.parent_name }}</strong> <span class="stars">{{ '★' * f.rating }}{{ '☆' * (5-f.rating) }}</span><p>{{ f.content }}</p><span class="fb-date">{{ f.created_at[:10] }}</span></div>
+    {% else %}<p class="empty-state" style="text-align:left;padding:16px">暂无评价</p>{% endfor %}
+</div>
+
+<!-- Coupons -->
+{% if coupons %}
+<div class="card-section"><h3>可用优惠券</h3>
+    {% for c in coupons %}<span class="tag">免信息费券 #{{ c.id }}</span>{% endfor %}
+</div>{% endif %}
+
+<!-- Settings -->
+<div class="card-section">
+    <h3>⚙️ 设置</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="/upload/teacher/{{ teacher.id }}" class="btn btn-outline" style="font-size:.82rem">上传学校认证</a>
+        <a href="/settings/payment" class="btn btn-outline" style="font-size:.82rem">收款账户绑定</a>
+    </div>
+</div>
+
+{% endblock %}

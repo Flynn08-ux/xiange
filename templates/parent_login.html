@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}家长入口 — 弦歌{% endblock %}
+{% block content %}
+
+<div class="login-page">
+    <h1 class="page-title">家长入口</h1>
+    <p class="page-subtitle">使用注册邮箱登录，查看试课进度</p>
+    <form class="login-form" method="POST">
+        <div class="form-group">
+            <label for="email">注册邮箱</label>
+            <input type="email" id="email" name="email" required placeholder="申请试课时填写的邮箱">
+        </div>
+        <button type="submit" class="btn btn-primary btn-large">查看申请进度</button>
+        <p class="login-hint">未申请试课？<a href="/teachers">先找老师</a></p>
+    </form>
+</div>
+
+{% endblock %}

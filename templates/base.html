@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}弦歌{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+</head>
+<body>
+    <div class="particles"><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div></div>
+    
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="/" class="logo"><span>弦</span>歌</a>
+            <nav class="nav">
+                <a href="/">首页</a>
+                <a href="/teachers">找老师</a>
+                <a href="/register">成为老师</a>
+                {% if user and role == 'teacher' %}<a href="/teacher/center">家教中心</a>{% endif %}
+                {% if user and role == 'parent' %}<a href="/parent/center">家校中心</a>{% endif %}
+                {% if not user %}<a href="/login">登录</a>{% endif %}
+                {% if user %}<a href="/logout">退出</a>{% endif %}
+                <a href="/admin/login" class="nav-admin">管理</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        {% with msgs = get_flashed_messages(with_categories=true) %}
+            {% if msgs %}{% for c,m in msgs %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}{% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer"><div class="container footer-inner"><p>弦歌 &mdash; 温暖连接，安心教学</p></div></footer>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}找老师 — 弦歌{% endblock %}{% block content %}
+<h1 class="page-title">找老师</h1>
+<form class="search-bar" method="GET">
+    <div class="search-row">
+        <input type="text" name="search" placeholder="搜索姓名、科目、地区…" value="{{ search }}">
+        <select name="subject"><option value="">全部科目</option>{% for s in subjects %}<option value="{{ s }}" {% if s==selected_subject %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+        <input type="text" name="city" placeholder="省份/城市" value="{{ selected_city }}">
+        <select name="sort"><option value="newest" {% if sort=='newest' %}selected{% endif %}>最新</option><option value="rate_asc" {% if sort=='rate_asc' %}selected{% endif %}>价格↑</option><option value="rate_desc" {% if sort=='rate_desc' %}selected{% endif %}>价格↓</option><option value="rating" {% if sort=='rating' %}selected{% endif %}>评分</option></select>
+        <button type="submit" class="btn btn-primary">搜索</button>
+    </div>
+</form>
+<div class="teacher-grid">
+    {% for t in teachers %}
+    <a href="/teacher/{{ t.id }}" class="teacher-card">
+        <div class="card-avatar">{{ t.name[:1] }}</div>
+        <h3>{{ t.name }}</h3>
+        <p class="card-subjects">{{ t.subjects[:40] }}{% if t.subjects|length>40 %}&hellip;{% endif %}</p>
+        <div class="card-meta">{% if t.province %}<span>{{ t.province }}</span>{% endif %}{% if t.ref_rate %}<span>{{ t.ref_rate }}元/时</span>{% endif %}</div>
+        {% if t.education %}<p class="card-edu">{{ t.education[:20] }}</p>{% endif %}
+    </a>
+    {% else %}<p class="empty-state">没有找到匹配的老师</p>{% endfor %}
+</div>{% endblock %}

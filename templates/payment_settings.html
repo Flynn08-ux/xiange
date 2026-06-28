@@ -1,0 +1,38 @@
+{% extends "base.html" %}{% block title %}收付款设置{% endblock %}{% block content %}
+<h1 class="page-title">收付款设置</h1>
+<p class="page-subtitle">绑定微信或支付宝账号用于收款</p>
+
+<div class="register-form" style="max-width:500px;margin:0 auto 32px">
+    <form method="POST">
+        <div class="form-group">
+            <label>账户类型</label>
+            <select name="account_type" required>
+                <option value="wechat">微信</option>
+                <option value="alipay">支付宝</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>账户名称（真实姓名）</label>
+            <input type="text" name="account_name" required placeholder="您的真实姓名">
+        </div>
+        <div class="form-group">
+            <label>账户账号</label>
+            <input type="text" name="account_info" required placeholder="微信号 / 支付宝账号">
+        </div>
+        <div class="form-actions"><button type="submit" class="btn btn-primary">绑定</button></div>
+    </form>
+</div>
+
+{% if accounts %}
+<h2 class="section-title">已绑定账户</h2>
+<div class="feedback-list" style="max-width:500px;margin:0 auto">
+    {% for a in accounts %}
+    <div class="feedback-item">
+        <strong>{{ '微信' if a.account_type=='wechat' else '支付宝' }}</strong>
+        <p>名称：{{ a.account_name }}</p>
+        <p>账号：{{ a.account_info }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
