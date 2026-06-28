@@ -41,4 +41,16 @@ let _r=null;async function gr(){if(_r)return _r;const x=await fetch('/api/region
 async function updateCities(){const p=document.querySelector('[name=province]').value;const cs=document.querySelector('[name=city]');const ds=document.querySelector('[name=district]');cs.innerHTML='<option value="">请选择城市</option>';ds.innerHTML='<option value="">请先选择城市</option>';if(!p)return;const r=await gr();const i=r[p];if(!i)return;if(i.type==='municipality'){cs.innerHTML='<option value="">直辖市</option>';updateDistricts()}else if(i.cities){cs.innerHTML='<option value="">请选择城市</option>'+Object.keys(i.cities).map(c=>`<option value="${c}">${c}</option>`).join('')}}
 async function updateDistricts(){const p=document.querySelector('[name=province]').value;const c=document.querySelector('[name=city]').value;const ds=document.querySelector('[name=district]');ds.innerHTML='<option value="">请选择区/县</option>';if(!p)return;const r=await gr();const i=r[p];if(!i)return;let d=[];if(i.type==='municipality')d=i.districts||[];else if(c&&i.cities&&i.cities[c])d=i.cities[c].districts||[];ds.innerHTML='<option value="">请选择区/县</option>'+d.map(x=>`<option value="${x}">${x}</option>`).join('')}
 </script>
+<style>.phone-row{display:flex;gap:8px}.phone-row input{flex:1}.phone-row button{white-space:nowrap}</style>
+<script>
+function sendSms(){
+    const phone = document.querySelector('[name="phone"]').value;
+    if(!phone||phone.length<11){alert('请输入11位手机号');return;}
+    const btn=document.querySelector('#sendSmsBtn');
+    btn.disabled=true;btn.textContent='发送中...';
+    fetch('/api/send-sms',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'phone='+encodeURIComponent(phone)})
+    .then(r=>r.json()).then(d=>{alert(d.message||'已发送');btn.textContent='已发送';setTimeout(()=>{btn.disabled=false;btn.textContent='重新发送'},30000)})
+    .catch(()=>{btn.disabled=false;btn.textContent='发送失败'});
+}
+</script>
 {% endblock %}
