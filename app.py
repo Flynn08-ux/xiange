@@ -127,7 +127,7 @@ def admin_ctx():
 
 @app.route("/admin")
 @admin_required
-def admin_dashboard():'
+def admin_dashboard():
     stats = {"teachers":0,"pending_fees":0,"parents":0,"appointments":0,"paid":0,'
              "completed":0,"refunded":0,"revenue":0,"fee_revenue":0,'
              "pending_earnings":0,"admins":0,"blacklist":0,"compensation":0}'
