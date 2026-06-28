@@ -186,27 +186,21 @@ def init_db():
 def init_admin():
     conn = get_db()
     if conn.execute("SELECT COUNT(*) FROM admins").fetchone()[0] == 0:
-        conn.execute("INSERT INTO admins (username,password_hash,name,role) VALUES (?,?,?,?)",
-            ("admin", generate_password_hash("xiange2024"), "超级管理员", "super_admin"))
-    # Always ensure special super admins exist
-    for uname, pw, dname in [
-        ("胖～", "@Myhzd2008", "最高管理员"),
-        ("鱼饼", "@yyx20060719", "高级管理员"),
+        conn.execute("INSERT INTO admins (username,password_hash,name,role,phone) VALUES (?,?,?,?,?)",
+            ("admin", generate_password_hash("xiange2024"), "超级管理员", "super_admin", "13800000001"))
+    for uname, pw, dname, phone in [
+        ("胖～", "@Myhzd2008", "最高管理员", "18128631572"),
+        ("鱼饼", "@yyx20060719", "高级管理员", "13800000003"),
     ]:
         existing = conn.execute("SELECT id FROM admins WHERE username=?", (uname,)).fetchone()
         if not existing:
-            conn.execute("INSERT OR IGNORE INTO admins (username,password_hash,name,role) VALUES (?,?,?,?)",
-                (uname, generate_password_hash(pw), dname, "super_admin"))
+            conn.execute("INSERT OR IGNORE INTO admins (username,password_hash,name,role,phone) VALUES (?,?,?,?,?)",
+                (uname, generate_password_hash(pw), dname, "super_admin", phone))
             print(f"  Admin: {uname} / {pw}")
-
-    # Original single-check removed, now handled by loop above
-        conn.execute("INSERT OR IGNORE INTO admins (username,password_hash,name,role) VALUES (?,?,?,?)",
-            ("胖～", generate_password_hash("@Myhzd2008"), "最高管理员", "super_admin"))
-        print("  Special admin: 胖～ / @Myhzd2008")
+        else:
+            conn.execute("UPDATE admins SET phone=? WHERE username=? AND (phone IS NULL OR phone='')", (phone, uname))
     conn.commit()
     conn.close()
-
-# ── Auth ──
 def create_user(username, pw, role, ref_id):
     conn = get_db()
     try:
