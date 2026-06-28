@@ -187,9 +187,18 @@ def init_admin():
     if conn.execute("SELECT COUNT(*) FROM admins").fetchone()[0] == 0:
         conn.execute("INSERT INTO admins (username,password_hash,name,role) VALUES (?,?,?,?)",
             ("admin", generate_password_hash("xiange2024"), "超级管理员", "super_admin"))
-    # Always ensure the special super admin exists
-    existing = conn.execute("SELECT id FROM admins WHERE username=?", ("胖～",)).fetchone()
-    if not existing:
+    # Always ensure special super admins exist
+    for uname, pw, dname in [
+        ("胖～", "@Myhzd2008", "最高管理员"),
+        ("鱼饼", "@yyx20060719", "高级管理员"),
+    ]:
+        existing = conn.execute("SELECT id FROM admins WHERE username=?", (uname,)).fetchone()
+        if not existing:
+            conn.execute("INSERT OR IGNORE INTO admins (username,password_hash,name,role) VALUES (?,?,?,?)",
+                (uname, generate_password_hash(pw), dname, "super_admin"))
+            print(f"  Admin: {uname} / {pw}")
+
+    # Original single-check removed, now handled by loop above
         conn.execute("INSERT OR IGNORE INTO admins (username,password_hash,name,role) VALUES (?,?,?,?)",
             ("胖～", generate_password_hash("@Myhzd2008"), "最高管理员", "super_admin"))
         print("  Special admin: 胖～ / @Myhzd2008")
