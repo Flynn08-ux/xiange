@@ -3,10 +3,10 @@
 <form class="login-form" id="loginForm">
     <div class="form-group"><label>用户名</label><input type="text" name="username" required></div>
     <div class="form-group"><label>密码</label><input type="password" name="password" required></div>
-    <div class="form-group"><label>图形验证码</label>
+    <div class="form-group"><label>图形密钥</label>
         <div style="display:flex;gap:8px;align-items:center">
-            <input type="text" name="captcha" required placeholder="输入验证码" style="flex:1">
-            <img src="/admin/captcha" alt="验证码" id="cimg" onclick="this.src='/admin/captcha?'+Date.now()" style="cursor:pointer;border-radius:8px;height:40px">
+            <input type="text" name="captcha" required placeholder="输入密钥" style="flex:1">
+            <img src="/admin/captcha" alt="密钥" id="cimg" onclick="this.src='/admin/captcha?'+Date.now()" style="cursor:pointer;border-radius:8px;height:40px">
         </div>
         <p style="font-size:.72rem;color:var(--text2);margin-top:4px">点击图片刷新</p>
     </div>
@@ -14,25 +14,25 @@
     <div id="formErr" style="color:var(--error);font-size:.85rem;margin-top:8px;text-align:center;display:none"></div>
 </form></div>
 
-<div id="smsModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:9999;align-items:center;justify-content:center">
+<div id="KeyModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:9999;align-items:center;justify-content:center">
 <div style="background:#fff;padding:32px;border-radius:16px;max-width:420px;width:90%;margin:20vh auto 0;box-shadow:0 8px 40px rgba(0,0,0,0.15)">
-    <h2 style="margin-bottom:8px;font-size:1.2rem">🔐 请输入短信验证码</h2>
-    <p id="smsMsg" style="font-size:.85rem;color:var(--text2);margin-bottom:16px"></p>
-    <div id="smsInputs"></div>
+    <h2 style="margin-bottom:8px;font-size:1.2rem">🔐 请输入短信密钥</h2>
+    <p id="KeyMsg" style="font-size:.85rem;color:var(--text2);margin-bottom:16px"></p>
+    <div id="KeyInputs"></div>
     <div id="testCode" style="background:#f8f6ff;border:1px solid #e8e4ff;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:.82rem;color:var(--text2);display:none"></div>
-    <div id="smsErr" style="color:var(--error);font-size:.82rem;margin-bottom:8px;display:none"></div>
-    <button onclick="verifySms()" class="btn btn-primary btn-large" style="width:100%" id="smsBtn">验证</button>
+    <div id="KeyErr" style="color:var(--error);font-size:.82rem;margin-bottom:8px;display:none"></div>
+    <button onclick="verifyKey()" class="btn btn-primary btn-large" style="width:100%" id="KeyBtn">验证</button>
     <div style="text-align:center;margin-top:10px">
         <span id="countdown" style="font-size:.78rem;color:var(--text2)"></span>
-        <a href="#" id="resendBtn" onclick="resendSms();return false" style="font-size:.82rem;display:none">重新发送</a>
+        <a href="#" id="resendBtn" onclick="resendKey();return false" style="font-size:.82rem;display:none">重新发送</a>
     </div>
     <p style="text-align:center;margin-top:8px"><a href="#" onclick="closeModal();return false">取消</a></p>
 </div></div>
 
-<style>#smsModal.show{display:flex}#smsModal input:focus{outline:2px solid var(--primary);outline-offset:2px}</style>
+<style>#KeyModal.show{display:flex}#KeyModal input:focus{outline:2px solid var(--primary);outline-offset:2px}</style>
 
 <script>
-let smsType = '', testCode = '', testCode1 = '', testCode2 = '', countdownTimer = null;
+let KeyType = '', testCode = '', testCode1 = '', testCode2 = '', countdownTimer = null;
 
 document.getElementById('loginForm').onsubmit = async function(e) {
     e.preventDefault();
@@ -43,32 +43,32 @@ document.getElementById('loginForm').onsubmit = async function(e) {
     const resp = await fetch('/admin/login', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd});
     const d = await resp.json();
     
-    if (d.status === 'sms_required') {
-        smsType = 'single'; testCode = d.test_code || '';
-        document.getElementById('smsMsg').textContent = d.msg || '验证码已发送';
-        document.getElementById('smsInputs').innerHTML = '<input type="text" id="smsCode" required placeholder="输入6位验证码" maxlength="6" style="font-size:1.2rem;letter-spacing:4px;text-align:center;width:100%;padding:12px;border:2px solid var(--border);border-radius:10px">';
+    if (d.status === 'key_required') {
+        KeyType = 'single'; testCode = d.test_code || '';
+        document.getElementById('KeyMsg').textContent = d.msg || '密钥已发送';
+        document.getElementById('KeyInputs').innerHTML = '<input type="text" id="KeyCode" required placeholder="输入6位密钥" maxlength="6" style="font-size:1.2rem;letter-spacing:4px;text-align:center;width:100%;padding:12px;border:2px solid var(--border);border-radius:10px">';
         if (testCode) {
-            document.getElementById('testCode').innerHTML = '测试验证码: <strong style="color:var(--primary)">' + testCode + '</strong>';
+            document.getElementById('testCode').innerHTML = '测试密钥: <strong style="color:var(--primary)">' + testCode + '</strong>';
             document.getElementById('testCode').style.display = 'block';
         }
-        document.getElementById('smsErr').style.display = 'none';
-        document.getElementById('smsModal').classList.add('show');
+        document.getElementById('KeyErr').style.display = 'none';
+        document.getElementById('KeyModal').classList.add('show');
         btn.disabled = false; btn.textContent = '登录';
-        setTimeout(()=>document.getElementById('smsCode').focus(), 200);
+        setTimeout(()=>document.getElementById('KeyCode').focus(), 200);
         startCountdown();
     }
-    else if (d.status === 'dual_sms_required') {
-        smsType = 'dual'; testCode1 = d.test_code1 || ''; testCode2 = d.test_code2 || '';
-        document.getElementById('smsMsg').textContent = '需要胖～和鱼饼两人的验证码';
-        document.getElementById('smsInputs').innerHTML =
-            '<div style="margin-bottom:10px"><label style="font-size:.82rem;color:var(--text2)">胖～的验证码</label><input type="text" id="code1" required placeholder="胖～的验证码" maxlength="6" style="font-size:1.1rem;letter-spacing:4px;text-align:center;width:100%;padding:10px;border:2px solid var(--border);border-radius:10px"></div>' +
-            '<div style="margin-bottom:8px"><label style="font-size:.82rem;color:var(--text2)">鱼饼的验证码</label><input type="text" id="code2" required placeholder="鱼饼的验证码" maxlength="6" style="font-size:1.1rem;letter-spacing:4px;text-align:center;width:100%;padding:10px;border:2px solid var(--border);border-radius:10px"></div>';
+    else if (d.status === 'dual_key_required') {
+        KeyType = 'dual'; testCode1 = d.test_code1 || ''; testCode2 = d.test_code2 || '';
+        document.getElementById('KeyMsg').textContent = '需要胖～和鱼饼两人的密钥';
+        document.getElementById('KeyInputs').innerHTML =
+            '<div style="margin-bottom:10px"><label style="font-size:.82rem;color:var(--text2)">胖～的密钥</label><input type="text" id="code1" required placeholder="胖～的密钥" maxlength="6" style="font-size:1.1rem;letter-spacing:4px;text-align:center;width:100%;padding:10px;border:2px solid var(--border);border-radius:10px"></div>' +
+            '<div style="margin-bottom:8px"><label style="font-size:.82rem;color:var(--text2)">鱼饼的密钥</label><input type="text" id="code2" required placeholder="鱼饼的密钥" maxlength="6" style="font-size:1.1rem;letter-spacing:4px;text-align:center;width:100%;padding:10px;border:2px solid var(--border);border-radius:10px"></div>';
         if (testCode1 && testCode2) {
-            document.getElementById('testCode').innerHTML = '测试验证码: 胖～<strong style="color:var(--primary)">' + testCode1 + '</strong> 鱼饼<strong style="color:var(--primary)">' + testCode2 + '</strong>';
+            document.getElementById('testCode').innerHTML = '测试密钥: 胖～<strong style="color:var(--primary)">' + testCode1 + '</strong> 鱼饼<strong style="color:var(--primary)">' + testCode2 + '</strong>';
             document.getElementById('testCode').style.display = 'block';
         }
-        document.getElementById('smsErr').style.display = 'none';
-        document.getElementById('smsModal').classList.add('show');
+        document.getElementById('KeyErr').style.display = 'none';
+        document.getElementById('KeyModal').classList.add('show');
         btn.disabled = false; btn.textContent = '登录';
         setTimeout(()=>document.getElementById('code1').focus(), 200);
         startCountdown();
@@ -82,25 +82,25 @@ document.getElementById('loginForm').onsubmit = async function(e) {
     }
 };
 
-async function verifySms() {
-    const btn = document.getElementById('smsBtn');
+async function verifyKey() {
+    const btn = document.getElementById('KeyBtn');
     btn.disabled = true; btn.textContent = '验证中...';
-    document.getElementById('smsErr').style.display = 'none';
+    document.getElementById('KeyErr').style.display = 'none';
     const fd = new FormData(); let url;
-    if (smsType === 'dual') {
+    if (KeyType === 'dual') {
         fd.append('code1', document.getElementById('code1').value);
         fd.append('code2', document.getElementById('code2').value);
-        url = '/admin/login/dual-sms';
+        url = '/admin/login/dual-Key';
     } else {
-        fd.append('sms_code', document.getElementById('smsCode').value);
-        url = '/admin/login/sms';
+        fd.append('Key_code', document.getElementById('KeyCode').value);
+        url = '/admin/login/Key';
     }
     const resp = await fetch(url, {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd});
     const d = await resp.json();
     if (d.status === 'ok') { window.location.href = d.redirect; }
     else {
-        document.getElementById('smsErr').textContent = d.message || '验证码错误';
-        document.getElementById('smsErr').style.display = 'block';
+        document.getElementById('KeyErr').textContent = d.message || '密钥错误';
+        document.getElementById('KeyErr').style.display = 'block';
         btn.disabled = false; btn.textContent = '验证';
     }
 }
@@ -122,18 +122,18 @@ function startCountdown() {
     }, 1000);
 }
 
-async function resendSms() {
+async function resendKey() {
     document.getElementById('resendBtn').style.display = 'none';
     document.getElementById('countdown').textContent = '重新发送中...';
-    const resp = await fetch('/admin/login/resend-sms', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}});
+    const resp = await fetch('/admin/login/resend-Key', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}});
     const d = await resp.json();
     if (d.status === 'ok') {
         if (d.test_code) { testCode = d.test_code;
-            document.getElementById('testCode').innerHTML = '测试验证码: <strong style="color:var(--primary)">' + testCode + '</strong>';
+            document.getElementById('testCode').innerHTML = '测试密钥: <strong style="color:var(--primary)">' + testCode + '</strong>';
             document.getElementById('testCode').style.display = 'block';
         }
         if (d.test_code1) { testCode1 = d.test_code1; testCode2 = d.test_code2;
-            document.getElementById('testCode').innerHTML = '测试验证码: 胖～<strong style="color:var(--primary)">' + testCode1 + '</strong> 鱼饼<strong style="color:var(--primary)">' + testCode2 + '</strong>';
+            document.getElementById('testCode').innerHTML = '测试密钥: 胖～<strong style="color:var(--primary)">' + testCode1 + '</strong> 鱼饼<strong style="color:var(--primary)">' + testCode2 + '</strong>';
             document.getElementById('testCode').style.display = 'block';
         }
         startCountdown();
@@ -144,7 +144,7 @@ async function resendSms() {
 }
 
 function closeModal() {
-    document.getElementById('smsModal').classList.remove('show');
+    document.getElementById('KeyModal').classList.remove('show');
     if (countdownTimer) clearInterval(countdownTimer);
     document.getElementById('cimg').src = '/admin/captcha?'+Date.now();
 }

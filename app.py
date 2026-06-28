@@ -902,6 +902,26 @@ def admin_resend_sms():
         save_sms_code(a["phone"],code)
         return jsonify({"status":"ok","msg":"已重新发送","test_code":code})
     return jsonify({"status":"error","message":"发送失败"})
+
+
+@app.route("/admin/login/key", methods=["GET","POST"])
+def admin_login_key():
+    if "admin_login_id" not in session:
+        return redirect(url_for("admin_login"))
+    if request.method == "POST":
+        key = request.form.get("key","").strip()
+        ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        if key == "0608":
+            tok = uuid.uuid4().hex
+            db = get_db(); db.execute("UPDATE admins SET session_token=? WHERE id=?", (tok, session["admin_login_id"])); db.commit(); db.close()
+            session["admin_id"] = session.pop("admin_login_id")
+            session["admin_session_token"] = tok
+            session.permanent = True
+            if ajax: return jsonify({"status":"ok","redirect":url_for("admin_dashboard")})
+            flash("登录成功","success"); return redirect(url_for("admin_dashboard"))
+        if ajax: return jsonify({"status":"error","message":"密钥错误"})
+        flash("密钥错误","error")
+    return render_template("admin_key.html")
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")
