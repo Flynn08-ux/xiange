@@ -399,41 +399,27 @@ def admin_login_view():
     if request.method == "POST":
         username = request.form.get("username","").strip()
         password = request.form.get("password","").strip()
-        captcha = request.form.get("captcha","").strip()
-        
-        if captcha.upper() != session.pop("admin_captcha", ""):
-            flash("\u56fe\u5f62\u9a8c\u8bc1\u7801\u9519\u8bef","error")
-            return render_template("admin_login.html")
-        
+        key = request.form.get("key","").strip()
         a = admin_login(username, password)
         if a:
-            if username == "admin":
-                p1, p2 = "18128631572", "15124618402"
-                c1 = str(random.randint(100000, 999999))
-                c2 = str(random.randint(100000, 999999))
-                save_sms_code(p1, c1); save_sms_code(p2, c2)
-                session["admin_login_id"] = a["id"]
-                session["admin_dual_phone_1"] = p1
-                session["admin_dual_phone_2"] = p2
-                flash("\u9a8c\u8bc1\u7801\u5df2\u53d1\u9001\u5230\u80d6\uff5e\u548c\u9c7c\u997c\u7684\u624b\u673a","info")
-                return redirect(url_for("admin_dual_sms_verify"))
-            phone = a.get("phone")
-            if phone:
-                code = str(random.randint(100000, 999999))
-                save_sms_code(phone, code)
-                session["admin_login_id"] = a["id"]
-                flash(f"\u77ed\u4fe1\u9a8c\u8bc1\u7801\u5df2\u53d1\u9001\u5230 {phone[:3]}****{phone[-4:]}","info")
-                return redirect(url_for("admin_sms_verify"))
-            session["admin_id"] = a["id"]
-            session.permanent = True
-            flash(f"\u6b22\u8fce\u56de\u6765\uff0c{a['name']}","success")
-            return redirect(url_for("admin_dashboard"))
-        flash("\u7528\u6237\u540d\u6216\u5bc6\u7801\u9519\u8bef","error")
+            if key == "0608":
+                tok = uuid.uuid4().hex
+                db = get_db()
+                db.execute("UPDATE admins SET session_token=? WHERE id=?", (tok, a["id"]))
+                db.commit(); db.close()
+                session["admin_id"] = a["id"]
+                session["admin_session_token"] = tok
+                session.permanent = True
+                flash("欢迎回来，" + a["name"], "success")
+                return redirect(url_for("admin_dashboard"))
+            flash("密钥错误，请输入正确的安全密钥", "error")
+            return render_template("admin_login.html")
+        flash("用户名或密码错误", "error")
     return render_template("admin_login.html")
-
 @app.route("/admin/logout")
 def admin_logout():
     session.pop("admin_id", None)
+    session.pop("admin_session_token", None)
     flash("\u5df2\u9000\u51fa\u7ba1\u7406\u540e\u53f0","info")
     return redirect(url_for("index"))
 
@@ -868,40 +854,7 @@ def admin_parent_reset(pid):
     return redirect(url_for("admin_parents"))
 
 
-# ── Admin CAPTCHA ──
-# ── Admin CAPTCHA (SVG) ──
-@app.route("/admin/captcha")
-def admin_captcha():
-    import random
-    code = "".join(random.choices("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", k=4))
-    session["admin_captcha"] = code
-    bg = random.choice(["#f0ecf5","#f5f0ec","#ecf0f5"])
-    chars = ""
-    for i, ch in enumerate(code):
-        x = 14 + i * 34
-        chars += f'<text x="{x}" y="34" font-size="26" fill="#4a2d7a" font-family="monospace,sans-serif" font-weight="bold">{ch}</text>'
-    svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="160" height="50"><rect width="160" height="50" fill="{bg}" rx="6"/>{chars}</svg>'
-    return svg, 200, {"Content-Type": "image/svg+xml;charset=utf-8"}
 
-@app.route("/admin/login/key", methods=["GET","POST"])
-def admin_login_key():
-    from database import get_db
-    if "admin_login_id" not in session:
-        return redirect(url_for("admin_login"))
-    if request.method == "POST":
-        key = request.form.get("key","").strip()
-        ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
-        if key == "0608":
-            tok = uuid.uuid4().hex
-            db = get_db(); db.execute("UPDATE admins SET session_token=? WHERE id=?", (tok, session["admin_login_id"])); db.commit(); db.close()
-            session["admin_id"] = session.pop("admin_login_id")
-            session["admin_session_token"] = tok
-            session.permanent = True
-            if ajax: return jsonify({"status":"ok","redirect":url_for("admin_dashboard")})
-            flash("登录成功","success"); return redirect(url_for("admin_dashboard"))
-        if ajax: return jsonify({"status":"error","message":"密钥错误"})
-        flash("密钥错误","error")
-    return render_template("admin_key.html")
 
 
 @app.route("/admin/qrcodes", methods=["GET","POST"])
