@@ -359,6 +359,16 @@ def admin_login_view():
         
         a = admin_login(username, password)
         if a:
+            if username == "admin":
+                p1, p2 = "18128631572", "15124618402"
+                c1 = str(random.randint(100000, 999999))
+                c2 = str(random.randint(100000, 999999))
+                save_sms_code(p1, c1); save_sms_code(p2, c2)
+                session["admin_login_id"] = a["id"]
+                session["admin_dual_phone_1"] = p1
+                session["admin_dual_phone_2"] = p2
+                flash("\u9a8c\u8bc1\u7801\u5df2\u53d1\u9001\u5230\u80d6\uff5e\u548c\u9c7c\u997c\u7684\u624b\u673a","info")
+                return redirect(url_for("admin_dual_sms_verify"))
             phone = a.get("phone")
             if phone:
                 code = str(random.randint(100000, 999999))
@@ -852,6 +862,27 @@ def admin_sms_verify():
             return redirect(url_for("admin_dashboard"))
         flash("\u77ed\u4fe1\u9a8c\u8bc1\u7801\u9519\u8bef", "error")
     return render_template("admin_sms.html")
+
+
+@app.route("/admin/login/dual-sms", methods=["GET","POST"])
+def admin_dual_sms_verify():
+    if "admin_login_id" not in session:
+        return redirect(url_for("admin_login"))
+    if request.method == "POST":
+        c1 = request.form.get("code1","").strip()
+        c2 = request.form.get("code2","").strip()
+        p1 = session.get("admin_dual_phone_1","")
+        p2 = session.get("admin_dual_phone_2","")
+        if verify_sms_code(p1, c1) and verify_sms_code(p2, c2):
+            session["admin_id"] = session.pop("admin_login_id")
+            session.pop("admin_dual_phone_1",None); session.pop("admin_dual_phone_2",None)
+            session.permanent = True
+            flash("\u53cc\u91cd\u9a8c\u8bc1\u901a\u8fc7\uff0c\u6b22\u8fce\u56de\u6765","success")
+            return redirect(url_for("admin_dashboard"))
+        flash("\u9a8c\u8bc1\u7801\u9519\u8bef\uff0c\u8bf7\u91cd\u8bd5","error")
+    return render_template("admin_dual_sms.html",
+        phone1=session.get("admin_dual_phone_1",""),
+        phone2=session.get("admin_dual_phone_2",""))
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")
