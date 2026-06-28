@@ -654,7 +654,7 @@ def parent_register():
         if not d["password"] or len(d["password"]) < 4: errors.append("密码至少4位")
         if not d["parent_name"]: errors.append("请输入您的姓名")
         if not d["phone"]: errors.append("请输入手机号")
-        elif phone_exists(d["phone"]): errors.append("该手机号已被其他账号使用")
+        elif phone_exists(d["phone"], "parent"): errors.append("该手机号已被其他账号使用")
         sms_code = request.form.get("sms_code","").strip()
         if not sms_code or not verify_sms_code(d["phone"], sms_code):
             errors.append("手机验证码错误或已过期")

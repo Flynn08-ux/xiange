@@ -1216,12 +1216,16 @@ def has_bought_contact(buyer_type, buyer_id, target_id):
     return r is not None
 
 
-def phone_exists(phone):
+def phone_exists(phone, role=None):
     conn = get_db()
-    t = conn.execute("SELECT 1 FROM teachers WHERE phone=? AND is_active=1", (phone,)).fetchone()
-    p = conn.execute("SELECT 1 FROM parents WHERE phone=? AND is_active=1", (phone,)).fetchone()
+    if role in (None, 'teacher'):
+        if conn.execute("SELECT 1 FROM teachers WHERE phone=? AND is_active=1", (phone,)).fetchone():
+            conn.close(); return True
+    if role in (None, 'parent'):
+        if conn.execute("SELECT 1 FROM parents WHERE phone=? AND is_active=1", (phone,)).fetchone():
+            conn.close(); return True
     conn.close()
-    return t is not None or p is not None
+    return False
 
 
 def delete_parent(parent_id, email):
