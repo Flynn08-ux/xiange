@@ -3,5 +3,6 @@
 <form class="login-form" method="POST">
     <div class="form-group"><label>用户名</label><input type="text" name="username" required></div>
     <div class="form-group"><label>密码</label><input type="password" name="password" required></div>
+    <div class="form-group"><label>图形验证码</label><div style="display:flex;gap:8px;align-items:center"><input type="text" name="captcha" required placeholder="输入验证码" style="flex:1"><img src="/admin/captcha" alt="验证码" onclick="this.src='/admin/captcha?'+Date.now()" style="cursor:pointer;border-radius:8px;height:40px"></div><p style="font-size:.72rem;color:var(--text2);margin-top:4px">点击图片刷新验证码</p></div>
     <button type="submit" class="btn btn-primary btn-large" style="width:100%">登录</button>
 </form></div>{% endblock %}

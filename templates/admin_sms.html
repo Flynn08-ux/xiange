@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block title %}短信验证{% endblock %}{% block content %}
+<div class="login-page"><h1 class="page-title">短信验证</h1>
+<form class="login-form" method="POST">
+    <p style="text-align:center;font-size:.9rem;color:var(--text2);margin-bottom:16px">短信验证码已发送到管理员手机</p>
+    <div class="form-group"><label>验证码</label><input type="text" name="sms_code" required placeholder="输入6位验证码" maxlength="6"></div>
+    <button type="submit" class="btn btn-primary btn-large" style="width:100%">验证</button>
+</form></div>{% endblock %}

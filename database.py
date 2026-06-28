@@ -51,6 +51,7 @@ def init_db():
             username TEXT NOT NULL UNIQUE,
             password_hash TEXT NOT NULL,
             name TEXT NOT NULL, role TEXT DEFAULT 'admin',
+            phone TEXT,
             is_active INTEGER DEFAULT 1,
             created_at TEXT DEFAULT (datetime('now','localtime'))
         );

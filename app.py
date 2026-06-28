@@ -1,7 +1,7 @@
 import os, re, random
 from datetime import timedelta
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session, send_file
 from database import (
     init_db, init_admin, login_user, check_blacklist, 
     add_teacher, get_teacher, get_teacher_by_id, get_all_teachers,
@@ -351,8 +351,21 @@ def admin_login_view():
     if request.method == "POST":
         username = request.form.get("username","").strip()
         password = request.form.get("password","").strip()
+        captcha = request.form.get("captcha","").strip()
+        
+        if captcha.upper() != session.pop("admin_captcha", ""):
+            flash("\u56fe\u5f62\u9a8c\u8bc1\u7801\u9519\u8bef","error")
+            return render_template("admin_login.html")
+        
         a = admin_login(username, password)
         if a:
+            phone = a.get("phone")
+            if phone:
+                code = str(random.randint(100000, 999999))
+                save_sms_code(phone, code)
+                session["admin_login_id"] = a["id"]
+                flash(f"\u77ed\u4fe1\u9a8c\u8bc1\u7801\u5df2\u53d1\u9001\u5230 {phone[:3]}****{phone[-4:]}","info")
+                return redirect(url_for("admin_sms_verify"))
             session["admin_id"] = a["id"]
             session.permanent = True
             flash(f"\u6b22\u8fce\u56de\u6765\uff0c{a['name']}","success")
@@ -802,6 +815,43 @@ def admin_parent_reset(pid):
     if u: update_user_password(u["username"], pw); flash(f"密码已重置: {pw}","success")
     else: flash("用户不存在","error")
     return redirect(url_for("admin_parents"))
+
+
+# ── Admin CAPTCHA ──
+@app.route("/admin/captcha")
+def admin_captcha():
+    from PIL import Image, ImageDraw
+    import io, random
+    w, h = 160, 50
+    img = Image.new('RGB', (w, h), (248, 245, 249))
+    draw = ImageDraw.Draw(img)
+    code = ''.join(random.choices('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', k=4))
+    session['admin_captcha'] = code
+    for _ in range(4):
+        draw.line([(random.randint(0,w),random.randint(0,h)),(random.randint(0,w),random.randint(0,h))], fill=(200,190,210), width=2)
+    for i, ch in enumerate(code):
+        draw.text((15+i*38, random.randint(8,16)), ch, fill=(80,50,120))
+    for _ in range(80):
+        draw.point((random.randint(0,w),random.randint(0,h)), fill=(180,170,190))
+    buf = io.BytesIO()
+    img.save(buf, 'PNG'); buf.seek(0)
+    return send_file(buf, mimetype='image/png')
+
+# ── Admin SMS Verify ──
+@app.route("/admin/login/sms", methods=["GET","POST"])
+def admin_sms_verify():
+    if "admin_login_id" not in session:
+        return redirect(url_for("admin_login"))
+    if request.method == "POST":
+        sms = request.form.get("sms_code","").strip()
+        a = get_admin(session["admin_login_id"])
+        if a and a.get("phone") and verify_sms_code(a["phone"], sms):
+            session["admin_id"] = session.pop("admin_login_id")
+            session.permanent = True
+            flash(f"\u6b22\u8fce\u56de\u6765\uff0c{a['name']}", "success")
+            return redirect(url_for("admin_dashboard"))
+        flash("\u77ed\u4fe1\u9a8c\u8bc1\u7801\u9519\u8bef", "error")
+    return render_template("admin_sms.html")
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")
