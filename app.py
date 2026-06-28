@@ -111,6 +111,20 @@ def health():
     return "OK", 200
 
 
+def admin_required(f):
+    @wraps(f)
+    def wrapper(*a,**k):
+        if "admin_id" not in session:
+            flash("请先登录管理员","error")
+            return redirect(url_for("admin_login"))
+        return f(*a,**k)
+    return wrapper
+
+def admin_ctx():
+    if "admin_id" in session:
+        return get_admin(session["admin_id"])
+    return None
+
 @app.route("/admin")
 @admin_required
 def admin_dashboard():
