@@ -127,6 +127,8 @@ def admin_ctx():
 
 @app.route("/admin")
 @admin_required
+@app.route("/admin")
+@admin_required
 def admin_dashboard():
     try:
         auto_pay_overdue()
