@@ -1,17 +1,17 @@
 {% extends "base.html" %}{% block title %}管理员登录{% endblock %}{% block content %}
 <div class="login-page"><h1 class="page-title">管理员登录</h1>
 <form class="login-form" id="loginForm">
-    <div class="form-group"><label>用户名</label><input type="text" name="username" id="loginUser" required></div>
+    <div class="form-group"><label>用户名</label><input type="text" name="username" required></div>
     <div class="form-group"><label>密码</label><input type="password" name="password" required></div>
     <div class="form-group"><label>图形验证码</label>
         <div style="display:flex;gap:8px;align-items:center">
             <input type="text" name="captcha" required placeholder="输入验证码" style="flex:1">
-            <img src="/admin/captcha" alt="验证码" id="captchaImg" onclick="this.src='/admin/captcha?'+Date.now()" style="cursor:pointer;border-radius:8px;height:40px">
+            <img src="/admin/captcha" alt="验证码" id="cimg" onclick="this.src='/admin/captcha?'+Date.now()" style="cursor:pointer;border-radius:8px;height:40px">
         </div>
-        <p style="font-size:.72rem;color:var(--text2);margin-top:4px">点击图片刷新验证码</p>
+        <p style="font-size:.72rem;color:var(--text2);margin-top:4px">点击图片刷新</p>
     </div>
     <button type="submit" class="btn btn-primary btn-large" style="width:100%">登录</button>
-    <div id="formError" style="color:var(--error);font-size:.85rem;margin-top:8px;text-align:center;display:none"></div>
+    <div id="formErr" style="color:var(--error);font-size:.85rem;margin-top:8px;text-align:center;display:none"></div>
 </form></div>
 
 <div id="smsModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:9999;align-items:center;justify-content:center">
@@ -19,57 +19,65 @@
     <h2 style="margin-bottom:8px;font-size:1.2rem">🔐 请输入短信验证码</h2>
     <p id="smsMsg" style="font-size:.85rem;color:var(--text2);margin-bottom:16px"></p>
     <div id="smsInputs"></div>
-    <div id="smsError" style="color:var(--error);font-size:.82rem;margin-bottom:8px;display:none"></div>
+    <div id="testCode" style="background:#f8f6ff;border:1px solid #e8e4ff;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:.82rem;color:var(--text2);display:none"></div>
+    <div id="smsErr" style="color:var(--error);font-size:.82rem;margin-bottom:8px;display:none"></div>
     <button onclick="verifySms()" class="btn btn-primary btn-large" style="width:100%" id="smsBtn">验证</button>
-    <p style="text-align:center;margin-top:12px"><a href="#" onclick="closeSms();return false">取消</a></p>
+    <div style="text-align:center;margin-top:10px">
+        <span id="countdown" style="font-size:.78rem;color:var(--text2)"></span>
+        <a href="#" id="resendBtn" onclick="resendSms();return false" style="font-size:.82rem;display:none">重新发送</a>
+    </div>
+    <p style="text-align:center;margin-top:8px"><a href="#" onclick="closeModal();return false">取消</a></p>
 </div></div>
 
-<style>
-#smsModal.show{display:flex}
-#smsModal input:focus{outline:2px solid var(--primary);outline-offset:2px}
-</style>
+<style>#smsModal.show{display:flex}#smsModal input:focus{outline:2px solid var(--primary);outline-offset:2px}</style>
 
 <script>
-const form = document.getElementById('loginForm');
-const captchaImg = document.getElementById('captchaImg');
+let smsType = '', testCode = '', testCode1 = '', testCode2 = '', countdownTimer = null;
 
-form.onsubmit = async function(e) {
+document.getElementById('loginForm').onsubmit = async function(e) {
     e.preventDefault();
-    const btn = form.querySelector('button[type=submit]');
+    const btn = this.querySelector('button[type=submit]');
     btn.disabled = true; btn.textContent = '登录中...';
-    document.getElementById('formError').style.display = 'none';
-    
-    const fd = new FormData(form);
-    const resp = await fetch('/admin/login', {
-        method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd
-    });
+    document.getElementById('formErr').style.display = 'none';
+    const fd = new FormData(this);
+    const resp = await fetch('/admin/login', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd});
     const d = await resp.json();
     
     if (d.status === 'sms_required') {
+        smsType = 'single'; testCode = d.test_code || '';
         document.getElementById('smsMsg').textContent = d.msg || '验证码已发送';
         document.getElementById('smsInputs').innerHTML = '<input type="text" id="smsCode" required placeholder="输入6位验证码" maxlength="6" style="font-size:1.2rem;letter-spacing:4px;text-align:center;width:100%;padding:12px;border:2px solid var(--border);border-radius:10px">';
-        document.getElementById('smsError').style.display = 'none';
+        if (testCode) {
+            document.getElementById('testCode').innerHTML = '测试验证码: <strong style="color:var(--primary)">' + testCode + '</strong>';
+            document.getElementById('testCode').style.display = 'block';
+        }
+        document.getElementById('smsErr').style.display = 'none';
         document.getElementById('smsModal').classList.add('show');
-        window._smsType = 'single';
         btn.disabled = false; btn.textContent = '登录';
         setTimeout(()=>document.getElementById('smsCode').focus(), 200);
+        startCountdown();
     }
     else if (d.status === 'dual_sms_required') {
+        smsType = 'dual'; testCode1 = d.test_code1 || ''; testCode2 = d.test_code2 || '';
         document.getElementById('smsMsg').textContent = '需要胖～和鱼饼两人的验证码';
-        document.getElementById('smsInputs').innerHTML = 
-            '<div style="margin-bottom:12px"><label style="font-size:.82rem;color:var(--text2);display:block;margin-bottom:4px">胖～的验证码</label><input type="text" id="code1" required placeholder="胖～的验证码" maxlength="6" style="font-size:1.1rem;letter-spacing:4px;text-align:center;width:100%;padding:10px;border:2px solid var(--border);border-radius:10px"></div>' +
-            '<div style="margin-bottom:8px"><label style="font-size:.82rem;color:var(--text2);display:block;margin-bottom:4px">鱼饼的验证码</label><input type="text" id="code2" required placeholder="鱼饼的验证码" maxlength="6" style="font-size:1.1rem;letter-spacing:4px;text-align:center;width:100%;padding:10px;border:2px solid var(--border);border-radius:10px"></div>';
-        document.getElementById('smsError').style.display = 'none';
+        document.getElementById('smsInputs').innerHTML =
+            '<div style="margin-bottom:10px"><label style="font-size:.82rem;color:var(--text2)">胖～的验证码</label><input type="text" id="code1" required placeholder="胖～的验证码" maxlength="6" style="font-size:1.1rem;letter-spacing:4px;text-align:center;width:100%;padding:10px;border:2px solid var(--border);border-radius:10px"></div>' +
+            '<div style="margin-bottom:8px"><label style="font-size:.82rem;color:var(--text2)">鱼饼的验证码</label><input type="text" id="code2" required placeholder="鱼饼的验证码" maxlength="6" style="font-size:1.1rem;letter-spacing:4px;text-align:center;width:100%;padding:10px;border:2px solid var(--border);border-radius:10px"></div>';
+        if (testCode1 && testCode2) {
+            document.getElementById('testCode').innerHTML = '测试验证码: 胖～<strong style="color:var(--primary)">' + testCode1 + '</strong> 鱼饼<strong style="color:var(--primary)">' + testCode2 + '</strong>';
+            document.getElementById('testCode').style.display = 'block';
+        }
+        document.getElementById('smsErr').style.display = 'none';
         document.getElementById('smsModal').classList.add('show');
-        window._smsType = 'dual';
         btn.disabled = false; btn.textContent = '登录';
         setTimeout(()=>document.getElementById('code1').focus(), 200);
+        startCountdown();
     }
     else {
-        document.getElementById('formError').textContent = d.message || '登录失败';
-        document.getElementById('formError').style.display = 'block';
-        captchaImg.src = '/admin/captcha?'+Date.now();
-        form.querySelector('[name="captcha"]').value = '';
+        document.getElementById('formErr').textContent = d.message || '登录失败';
+        document.getElementById('formErr').style.display = 'block';
+        document.getElementById('cimg').src = '/admin/captcha?'+Date.now();
+        this.querySelector('[name="captcha"]').value = '';
         btn.disabled = false; btn.textContent = '登录';
     }
 };
@@ -77,11 +85,9 @@ form.onsubmit = async function(e) {
 async function verifySms() {
     const btn = document.getElementById('smsBtn');
     btn.disabled = true; btn.textContent = '验证中...';
-    document.getElementById('smsError').style.display = 'none';
-    
-    const fd = new FormData();
-    let url;
-    if (window._smsType === 'dual') {
+    document.getElementById('smsErr').style.display = 'none';
+    const fd = new FormData(); let url;
+    if (smsType === 'dual') {
         fd.append('code1', document.getElementById('code1').value);
         fd.append('code2', document.getElementById('code2').value);
         url = '/admin/login/dual-sms';
@@ -89,22 +95,58 @@ async function verifySms() {
         fd.append('sms_code', document.getElementById('smsCode').value);
         url = '/admin/login/sms';
     }
-    
     const resp = await fetch(url, {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd});
     const d = await resp.json();
-    
-    if (d.status === 'ok') {
-        window.location.href = d.redirect;
-    } else {
-        document.getElementById('smsError').textContent = d.message || '验证码错误';
-        document.getElementById('smsError').style.display = 'block';
+    if (d.status === 'ok') { window.location.href = d.redirect; }
+    else {
+        document.getElementById('smsErr').textContent = d.message || '验证码错误';
+        document.getElementById('smsErr').style.display = 'block';
         btn.disabled = false; btn.textContent = '验证';
     }
 }
 
-function closeSms() {
+function startCountdown() {
+    let sec = 60;
+    document.getElementById('resendBtn').style.display = 'none';
+    document.getElementById('countdown').textContent = sec + '秒后可重新发送';
+    if (countdownTimer) clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+        sec--;
+        if (sec <= 0) {
+            clearInterval(countdownTimer);
+            document.getElementById('countdown').textContent = '';
+            document.getElementById('resendBtn').style.display = 'inline';
+        } else {
+            document.getElementById('countdown').textContent = sec + '秒后可重新发送';
+        }
+    }, 1000);
+}
+
+async function resendSms() {
+    document.getElementById('resendBtn').style.display = 'none';
+    document.getElementById('countdown').textContent = '重新发送中...';
+    const resp = await fetch('/admin/login/resend-sms', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}});
+    const d = await resp.json();
+    if (d.status === 'ok') {
+        if (d.test_code) { testCode = d.test_code;
+            document.getElementById('testCode').innerHTML = '测试验证码: <strong style="color:var(--primary)">' + testCode + '</strong>';
+            document.getElementById('testCode').style.display = 'block';
+        }
+        if (d.test_code1) { testCode1 = d.test_code1; testCode2 = d.test_code2;
+            document.getElementById('testCode').innerHTML = '测试验证码: 胖～<strong style="color:var(--primary)">' + testCode1 + '</strong> 鱼饼<strong style="color:var(--primary)">' + testCode2 + '</strong>';
+            document.getElementById('testCode').style.display = 'block';
+        }
+        startCountdown();
+    } else {
+        document.getElementById('countdown').textContent = '发送失败，请重试';
+        document.getElementById('resendBtn').style.display = 'inline';
+    }
+}
+
+function closeModal() {
     document.getElementById('smsModal').classList.remove('show');
-    captchaImg.src = '/admin/captcha?'+Date.now();
+    if (countdownTimer) clearInterval(countdownTimer);
+    document.getElementById('cimg').src = '/admin/captcha?'+Date.now();
 }
 </script>
 {% endblock %}

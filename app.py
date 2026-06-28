@@ -877,6 +877,24 @@ def admin_dual_sms_verify():
     return render_template("admin_dual_sms.html",
         phone1=session.get("admin_dual_phone_1",""),
         phone2=session.get("admin_dual_phone_2",""))
+
+
+@app.route("/admin/login/resend-sms", methods=["POST"])
+def admin_resend_sms():
+    if "admin_login_id" not in session:
+        return jsonify({"status":"error","message":"登录超时"})
+    if session.get("admin_dual_phone_1"):
+        p1,p2 = session["admin_dual_phone_1"],session["admin_dual_phone_2"]
+        c1 = str(random.randint(100000,999999))
+        c2 = str(random.randint(100000,999999))
+        save_sms_code(p1,c1); save_sms_code(p2,c2)
+        return jsonify({"status":"ok","msg":"已重新发送","test_code1":c1,"test_code2":c2})
+    a = get_admin(session["admin_login_id"])
+    if a and a.get("phone"):
+        code = str(random.randint(100000,999999))
+        save_sms_code(a["phone"],code)
+        return jsonify({"status":"ok","msg":"已重新发送","test_code":code})
+    return jsonify({"status":"error","message":"发送失败"})
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")
