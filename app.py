@@ -833,3 +833,4 @@ def payment_settings():
     return render_template("payment_settings.html", accounts=accounts,
                            user_type=user_type, uid=uid,
                            admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
+
