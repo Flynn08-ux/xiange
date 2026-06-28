@@ -127,11 +127,12 @@ def admin_ctx():
 
 @app.route("/admin")
 @admin_required
-def admin_dashboard():
-    stats = {"teachers":0,"pending_fees":0,"parents":0,"appointments":0,"paid":0,
-             "completed":0,"refunded":0,"revenue":0,"fee_revenue":0,
-             "pending_earnings":0,"admins":0,"blacklist":0,"compensation":0}
+def admin_dashboard():'
+    stats = {"teachers":0,"pending_fees":0,"parents":0,"appointments":0,"paid":0,'
+             "completed":0,"refunded":0,"revenue":0,"fee_revenue":0,'
+             "pending_earnings":0,"admins":0,"blacklist":0,"compensation":0}'
     return render_template("admin_new.html", stats=stats, admin=None)
+
 @app.route("/about")
 def about():
     return render_template("about.html", admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
