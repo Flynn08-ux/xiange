@@ -890,6 +890,33 @@ def payment():
     alipay = os.path.exists(os.path.join(app.static_folder, "qr_alipay.jpg"))
     wechat = os.path.exists(os.path.join(app.static_folder, "qr_wechat.jpg"))
     return render_template("payment.html", alipay=alipay, wechat=wechat, admin=admin_ctx())
+
+
+@app.route("/payment/report", methods=["POST"])
+def payment_report():
+    method = request.form.get("method","")
+    conn = get_db()
+    conn.execute("INSERT INTO payment_orders (payment_method,status) VALUES (?,?)", (method,"pending"))
+    conn.commit()
+    flash("\u5df2\u63d0\u4ea4\uff0c\u7b49\u5f85\u7ba1\u7406\u5458\u786e\u8ba4\u4ed8\u6b3e","info")
+    return redirect(url_for("payment"))
+
+@app.route("/admin/orders")
+@admin_required
+def admin_orders():
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM payment_orders ORDER BY created_at DESC").fetchall()
+    conn.close()
+    return render_template("admin_orders.html", orders=[dict(r) for r in rows], admin=admin_ctx())
+
+@app.route("/admin/order/<int:oid>/confirm", methods=["POST"])
+@admin_required
+def admin_confirm_order(oid):
+    conn = get_db()
+    conn.execute("UPDATE payment_orders SET status='paid',confirmed_at=datetime('now','localtime') WHERE id=?", (oid,))
+    conn.commit(); conn.close()
+    flash("\u5df2\u786e\u8ba4\u6536\u6b3e","success")
+    return redirect(url_for("admin_orders"))
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")

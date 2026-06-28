@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block content %}
+<div class="admin-bar"><h1>收款订单管理</h1>
+<div class="admin-nav">
+    <a href="/admin">概览</a><a href="/admin/teachers">教师</a><a href="/admin/parents">家长</a>
+    <a href="/admin/appointments">申请</a><a href="/admin/fees">费用</a><a href="/admin/blacklist">黑名单</a>
+    <a href="/admin/verification">认证</a><a href="/admin/qrcodes">收款码</a><a href="/admin/orders" class="active">订单</a><a href="/admin/logout">退出</a>
+</div></div>
+<table class="admin-table"><thead><tr><th>ID</th><th>支付方式</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr></thead><tbody>
+{% for o in orders %}<tr>
+    <td>{{ o.id }}</td>
+    <td>{{ "支付宝" if o.payment_method=="alipay" else "微信" }}</td>
+    <td>{{ o.amount or "线索费" }}</td>
+    <td>{% if o.status=="pending" %}<span class="label-pending">待确认</span>{% elif o.status=="paid" %}<span class="label-paid">已收款</span>{% endif %}</td>
+    <td>{{ o.created_at[:16] if o.created_at else "" }}</td>
+    <td>{% if o.status=="pending" %}<form method="POST" action="/admin/order/{{ o.id }}/confirm" style="display:inline"><button class="btn-small btn-success">确认收款</button></form>{% endif %}</td>
+</tr>{% else %}<tr><td colspan="6" class="empty-cell">暂无订单</td></tr>{% endfor %}
+</tbody></table>{% endblock %}

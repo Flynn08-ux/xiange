@@ -171,6 +171,14 @@ def init_db():
             coupon_id INTEGER,
             paid_at TEXT DEFAULT (datetime('now','localtime'))
         );
+        CREATE TABLE IF NOT EXISTS payment_orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            payment_method TEXT,
+            amount INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'pending',
+            created_at TEXT DEFAULT (datetime('now','localtime')),
+            confirmed_at TEXT
+        );
         CREATE TABLE IF NOT EXISTS lessons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             appointment_id INTEGER NOT NULL,
