@@ -23,8 +23,10 @@ from regions import get_provinces, region_info
 from universities import UNIVERSITIES
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24).hex()
-app.permanent_session_lifetime = timedelta(hours=1)
+app.secret_key = os.environ.get("SECRET_KEY", "xiange-2024-stable-secret-key")
+app.permanent_session_lifetime = timedelta(hours=8)
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 @app.before_request
 def refresh_session():
     """每次请求刷新会话过期时间"""
