@@ -16,6 +16,19 @@
     <a href="/upload/parent/{{ parent.id }}" class="btn btn-outline" style="font-size:.82rem">上传学生证件</a>
 </div>
 
+
+<div class="profile-delete" style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+    <details>
+        <summary style="cursor:pointer;font-size:.85rem;color:var(--error);font-weight:500">不想用了？注销账号</summary>
+        <form class="delete-form" method="POST" action="/parent/{{ parent.id }}/delete"
+              onsubmit="return confirm('确认注销您的资料？此操作不可撤销。')"
+              style="margin-top:12px;padding:16px;background:#fef2f2;border-radius:12px;border:1px solid #fecaca">
+            <p style="font-size:.85rem;margin-bottom:8px">请输入注册时的邮箱以验证身份：</p>
+            <input type="email" name="email" required placeholder="注册邮箱" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:.9rem">
+            <button type="submit" class="btn btn-danger">确认注销</button>
+        </form>
+    </details>
+</div>
 {% endblock %}{% block content %}
 <div class="center-header">
     <div><h1>{{ parent.parent_name }} 的家校中心</h1>
@@ -82,4 +95,17 @@
     <a href="/upload/parent/{{ parent.id }}" class="btn btn-outline" style="font-size:.82rem">上传学生证件</a>
 </div>
 
+
+<div class="profile-delete" style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+    <details>
+        <summary style="cursor:pointer;font-size:.85rem;color:var(--error);font-weight:500">不想用了？注销账号</summary>
+        <form class="delete-form" method="POST" action="/parent/{{ parent.id }}/delete"
+              onsubmit="return confirm('确认注销您的资料？此操作不可撤销。')"
+              style="margin-top:12px;padding:16px;background:#fef2f2;border-radius:12px;border:1px solid #fecaca">
+            <p style="font-size:.85rem;margin-bottom:8px">请输入注册时的邮箱以验证身份：</p>
+            <input type="email" name="email" required placeholder="注册邮箱" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;font-size:.9rem">
+            <button type="submit" class="btn btn-danger">确认注销</button>
+        </form>
+    </details>
+</div>
 {% endblock %}

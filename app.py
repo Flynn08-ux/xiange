@@ -748,6 +748,18 @@ def admin_verify_ai(doc_id):
         flash(f"AI error: {info}", "warning")
     
     return redirect(url_for("admin_verification"))
+
+
+@app.route("/parent/<int:parent_id>/delete", methods=["POST"])
+def parent_delete(parent_id):
+    email = request.form.get("email","").strip()
+    ok = delete_parent(parent_id, email)
+    if ok:
+        session.clear()
+        flash("您的资料已成功注销，感谢使用弦歌", "success")
+        return redirect(url_for("index"))
+    flash("验证失败，请确认邮箱地址正确", "error")
+    return redirect(url_for("parent_center"))
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")

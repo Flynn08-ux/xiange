@@ -1222,3 +1222,14 @@ def phone_exists(phone):
     p = conn.execute("SELECT 1 FROM parents WHERE phone=? AND is_active=1", (phone,)).fetchone()
     conn.close()
     return t is not None or p is not None
+
+
+def delete_parent(parent_id, email):
+    conn = get_db()
+    conn.execute("UPDATE parents SET is_active=0 WHERE id=? AND email=?", (parent_id, email))
+    n = conn.execute("SELECT changes()").fetchone()[0]
+    if n > 0:
+        conn.execute("UPDATE users SET is_active=0 WHERE role='parent' AND ref_id=?", (parent_id,))
+    conn.commit()
+    conn.close()
+    return n > 0
