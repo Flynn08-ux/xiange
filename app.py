@@ -327,8 +327,8 @@ def appointment_action(aid, action):
     return redirect(request.referrer or url_for("index"))
 
 # ── Admin Routes ──
-@app.route("/admin/login", methods=["GET","POST"])
-def admin_login():
+@app.route("/admin/login", methods=["GET","POST"], endpoint="admin_login")
+def admin_login_view():
     if request.method == "POST":
         username = request.form.get("username","").strip()
         password = request.form.get("password","").strip()
