@@ -1,4 +1,4 @@
-import os, re, random
+import os, re, random, uuid
 from datetime import timedelta
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session, send_file
@@ -125,10 +125,15 @@ def login():
             if check_blacklist(user["role"], user["ref_id"]):
                 flash("\u60a8\u5df2\u88ab\u52a0\u5165\u9ed1\u540d\u5355\uff0c\u65e0\u6cd5\u767b\u5f55", "error")
                 return render_template("login.html")
+            tok = uuid.uuid4().hex
+            db = get_db()
+            db.execute("UPDATE users SET session_token=? WHERE id=?", (tok, user["id"]))
+            db.commit(); db.close()
             session["user_id"] = user["id"]
             session["role"] = user["role"]
             session["ref_id"] = user["ref_id"]
             session["username"] = username
+            session["session_token"] = tok
             session.permanent = True
             if user["role"] == "teacher":
                 return redirect(url_for("teacher_center"))

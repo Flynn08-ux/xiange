@@ -20,6 +20,7 @@ def init_db():
             role TEXT NOT NULL CHECK(role IN ('teacher','parent','admin')),
             ref_id INTEGER,
             is_active INTEGER DEFAULT 1,
+            session_token TEXT,
             created_at TEXT DEFAULT (datetime('now','localtime'))
         );
         CREATE TABLE IF NOT EXISTS teachers (
@@ -33,6 +34,7 @@ def init_db():
             rating_total REAL DEFAULT 0, rating_count INTEGER DEFAULT 0,
             completed_count INTEGER DEFAULT 0,
             is_active INTEGER DEFAULT 1,
+            session_token TEXT,
             created_at TEXT DEFAULT (datetime('now','localtime'))
         );
         CREATE TABLE IF NOT EXISTS parents (
@@ -44,6 +46,7 @@ def init_db():
             requirements TEXT, budget INTEGER,
             late_count INTEGER DEFAULT 0,
             is_active INTEGER DEFAULT 1,
+            session_token TEXT,
             created_at TEXT DEFAULT (datetime('now','localtime'))
         );
         CREATE TABLE IF NOT EXISTS admins (
@@ -52,6 +55,7 @@ def init_db():
             password_hash TEXT NOT NULL,
             name TEXT NOT NULL, role TEXT DEFAULT 'admin',
             phone TEXT,
+            session_token TEXT,
             is_active INTEGER DEFAULT 1,
             created_at TEXT DEFAULT (datetime('now','localtime'))
         );
@@ -190,7 +194,7 @@ def init_admin():
             ("admin", generate_password_hash("xiange2024"), "超级管理员", "super_admin", "13800000001"))
     for uname, pw, dname, phone in [
         ("胖～", "@Myhzd2008", "最高管理员", "18128631572"),
-        ("鱼饼", "@yyx20060719", "高级管理员", "13800000003"),
+        ("鱼饼", "@yyx20060719", "高级管理员", "15124618402"),
     ]:
         existing = conn.execute("SELECT id FROM admins WHERE username=?", (uname,)).fetchone()
         if not existing:
