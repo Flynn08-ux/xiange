@@ -1,20 +1,9 @@
-{% extends "base.html" %}{% block title %}支付信息费{% endblock %}{% block content %}
-<div class="login-page">
-    <h1 class="page-title">支付信息费</h1>
-    <div class="login-form" style="text-align:center">
-        <p style="font-size:1.1rem;margin-bottom:16px">首次入驻需支付 <strong style="font-size:1.5rem;color:var(--primary)">50元</strong> 信息费</p>
-        <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:24px">支付后即可开始接单。仅首次收费，后续所有收入归您。</p>
-        {% if coupons %}
-        <p style="margin-bottom:12px">您有 <strong>{{ coupons|length }}</strong> 张免信息费券可用</p>
-        {% endif %}
-        <form method="POST">
-            {% if coupons %}
-            <div class="form-group">
-                <label>使用优惠券（可选）</label>
-                <select name="coupon_id"><option value="">不使用</option>{% for c in coupons %}<option value="{{ c.id }}">免信息费券 #{{ c.id }}</option>{% endfor %}</select>
-            </div>
-            {% endif %}
-            <button type="submit" class="btn btn-primary btn-large" style="width:100%">确认支付 50 元</button>
-        </form>
+{% extends "base.html" %}{% block title %}注册免费{% endblock %}{% block content %}
+<div class="login-page" style="text-align:center">
+    <h1 class="page-title">注册免费</h1>
+    <div class="login-form">
+        <p style="font-size:1.1rem;margin-bottom:16px">现在注册完全免费 ✅</p>
+        <p style="font-size:.9rem;color:var(--text2);margin-bottom:24px">看中学生后再付线索费购买联系方式即可</p>
+        <a href="/teacher/center" class="btn btn-primary btn-large">去家教中心</a>
     </div>
 </div>{% endblock %}

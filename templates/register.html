@@ -1,6 +1,6 @@
 {% extends "base.html" %}{% block title %}注册成为老师 — 弦歌{% endblock %}{% block content %}
 <h1 class="page-title">注册成为老师</h1>
-<p class="page-subtitle">填写信息，支付信息费后即可开始接单</p>
+<p class="page-subtitle">快速免费注册，看中学生再付线索费</p>
 <form class="register-form" method="POST">
     <div class="form-section"><h2>创建账号</h2>
         <div class="form-row"><div class="form-group"><label>用户名 *</label><input type="text" name="username" value="{{ data.username if data else '' }}" required></div>
@@ -34,7 +34,7 @@
     <div class="form-section"><h2>个人简介</h2>
         <div class="form-group"><textarea name="bio" rows="4" placeholder="教学风格、擅长领域、过往成绩等">{{ data.bio if data else '' }}</textarea></div>
     </div>
-    <div class="form-actions"><button type="submit" class="btn btn-primary btn-large">提交注册（50元信息费）</button></div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary btn-large">免费注册</button></div>
 </form>
 <script>
 let _r=null;async function gr(){if(_r)return _r;const x=await fetch('/api/regions');_r=await x.json();return _r}

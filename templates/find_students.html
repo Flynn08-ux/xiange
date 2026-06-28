@@ -3,7 +3,7 @@
     <div><h1>📋 找学生</h1><p style="color:var(--text2);font-size:.9rem">浏览家长需求，看中了付课时费70%买联系方式</p></div>
     <div class="center-nav"><a href="/teacher/center">家教中心</a><a href="/find-students" class="active">找学生</a><a href="/bought-leads">已购线索</a></div>
 </div>
-{% if coupons %}<div class="card-section"><p>您有 <strong>{{ coupons|length }}</strong> 张免信息费券可用！</p></div>{% endif %}
+{% if coupons %}<div class="card-section"><p>您有 <strong>{{ coupons|length }}</strong> 张免线索费券可用！</p></div>{% endif %}
 <div class="teacher-grid">
     {% for p in parents %}
     <div class="teacher-card" style="text-align:left">
@@ -24,7 +24,7 @@
                 {% if coupons %}
                 <select name="coupon_id" style="font-size:.75rem;padding:4px 8px;margin-bottom:4px;width:100%;border-radius:8px;border:1px solid var(--border)">
                     <option value="">支付 {{ p.contact_fee }}元</option>
-                    {% for c in coupons %}<option value="{{ c.id }}">使用免信息费券（免费）</option>{% endfor %}
+                    {% for c in coupons %}<option value="{{ c.id }}">使用免线索费券（免费）</option>{% endfor %}
                 </select>
                 {% endif %}
                 <button type="submit" class="btn btn-primary" style="width:100%;padding:8px;font-size:.82rem;border-radius:8px">
