@@ -878,17 +878,17 @@ def admin_qrcodes():
                 if f and f.filename:
                     ext = f.filename.rsplit(".",1)[1].lower() if "." in f.filename else "png"
                     fn = f"qr_{key}.{ext}"
-                    f.save(os.path.join(UPLOAD_FOLDER, fn))
+                    f.save(os.path.join(app.static_folder, fn))
         flash("二维码已更新","success")
         return redirect(url_for("admin_qrcodes"))
-    alipay_exists = os.path.exists(os.path.join(UPLOAD_FOLDER, "qr_alipay.png"))
-    wechat_exists = os.path.exists(os.path.join(UPLOAD_FOLDER, "qr_wechat.png"))
+    alipay_exists = os.path.exists(os.path.join(app.static_folder, "qr_alipay.jpg"))
+    wechat_exists = os.path.exists(os.path.join(app.static_folder, "qr_wechat.jpg"))
     return render_template("admin_qrcodes.html", alipay=alipay_exists, wechat=wechat_exists, admin=admin_ctx())
 
 @app.route("/payment")
 def payment():
-    alipay = os.path.exists(os.path.join(UPLOAD_FOLDER, "qr_alipay.png"))
-    wechat = os.path.exists(os.path.join(UPLOAD_FOLDER, "qr_wechat.png"))
+    alipay = os.path.exists(os.path.join(app.static_folder, "qr_alipay.jpg"))
+    wechat = os.path.exists(os.path.join(app.static_folder, "qr_wechat.jpg"))
     return render_template("payment.html", alipay=alipay, wechat=wechat, admin=admin_ctx())
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))

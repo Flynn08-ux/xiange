@@ -5,13 +5,13 @@
     {% if alipay %}
     <div style="text-align:center">
         <h3 style="margin-bottom:8px;color:#1677ff">支付宝</h3>
-        <img src="/uploads/qr_alipay.png" style="width:200px;height:200px;border:2px solid #e8e4ed;border-radius:12px;padding:8px">
+        <img src="/static/qr_alipay.jpg" style="width:200px;height:200px;border:2px solid #e8e4ed;border-radius:12px;padding:8px">
     </div>
     {% endif %}
     {% if wechat %}
     <div style="text-align:center">
         <h3 style="margin-bottom:8px;color:#07c160">微信支付</h3>
-        <img src="/uploads/qr_wechat.png" style="width:200px;height:200px;border:2px solid #e8e4ed;border-radius:12px;padding:8px">
+        <img src="/static/qr_wechat.jpg" style="width:200px;height:200px;border:2px solid #e8e4ed;border-radius:12px;padding:8px">
     </div>
     {% endif %}
     {% if not alipay and not wechat %}<p style="color:var(--text2)">管理员暂未上传收款码</p>{% endif %}
