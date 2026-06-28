@@ -30,7 +30,6 @@ def init_db():
             experience TEXT, available TEXT,
             province TEXT, city TEXT, district TEXT,
             ref_rate INTEGER, bio TEXT,
-            info_fee_paid INTEGER DEFAULT 0,
             rating_total REAL DEFAULT 0, rating_count INTEGER DEFAULT 0,
             completed_count INTEGER DEFAULT 0,
             is_active INTEGER DEFAULT 1,
@@ -330,7 +329,6 @@ def pay_info_fee(tid, coupon_id=None):
     if coupon_id:
         conn.execute("UPDATE coupons SET used=1,used_at=datetime('now','localtime') WHERE id=? AND teacher_id=? AND used=0", (coupon_id,tid))
     conn.execute("UPDATE teacher_fees SET paid=1,paid_at=datetime('now','localtime') WHERE id=(SELECT id FROM teacher_fees WHERE teacher_id=? ORDER BY id DESC LIMIT 1)", (tid,))
-    conn.execute("UPDATE teachers SET info_fee_paid=1 WHERE id=?", (tid,))
     conn.commit()
     conn.close()
 
@@ -430,7 +428,7 @@ def get_admin_stats():
     s = lambda q: conn.execute(q).fetchone()[0]
     stats = {
         "teachers": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 "),
-        "pending_fees": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 AND info_fee_paid=0"),
+        "pending_fees": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 "),
         "teachers_total": s("SELECT COUNT(*) FROM teachers WHERE is_active=1"),
         "parents": s("SELECT COUNT(*) FROM parents WHERE is_active=1"),
         "appointments": s("SELECT COUNT(*) FROM appointments"),
@@ -812,7 +810,7 @@ def get_admin_stats():
     s = lambda q: conn.execute(q).fetchone()[0]
     stats = {
         "teachers": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 "),
-        "pending_fees": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 AND info_fee_paid=0"),
+        "pending_fees": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 "),
         "teachers_total": s("SELECT COUNT(*) FROM teachers WHERE is_active=1"),
         "parents": s("SELECT COUNT(*) FROM parents WHERE is_active=1"),
         "appointments": s("SELECT COUNT(*) FROM appointments"),
