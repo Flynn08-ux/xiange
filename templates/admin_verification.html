@@ -6,12 +6,13 @@
         <a href="/admin/verification" class="active">认证</a><a href="/admin/admins">管理员</a><a href="/admin/logout">退出</a>
     </div>
 </div>
-<table class="admin-table"><thead><tr><th>ID</th><th>用户</th><th>类型</th><th>材料</th><th>文件</th><th>状态</th><th>操作</th></tr></thead><tbody>
+<table class="admin-table"><thead><tr><th>ID</th><th>用户</th><th>类型</th><th>材料</th><th>文件</th><th>状态</th><th>AI</th><th>操作</th></tr></thead><tbody>
 {% for d in docs %}<tr>
     <td>{{ d.id }}</td><td>{{ d.teacher_name or d.parent_name or '' }}</td>
     <td>{{ d.user_type }}</td><td>{{ {school:'学校证明',campus_card:'学生证',certificate:'证书'}[d.doc_type] or d.doc_type }}</td>
     <td>{% if d.filepath %}<a href="/uploads/{{ d.filepath }}" target="_blank">查看</a>{% endif %}</td>
     <td><span class="label-{{ d.status }}">{% if d.status=='pending' %}待审核{% elif d.status=='approved' %}已通过{% else %}已拒绝{% endif %}</span></td>
-    <td>{% if d.status=='pending' %}<form method="POST" action="/admin/verification/{{ d.id }}/approved" style="display:inline"><button class="btn-small btn-success">通过</button></form><form method="POST" action="/admin/verification/{{ d.id }}/rejected" style="display:inline"><button class="btn-small btn-danger">拒绝</button></form>{% endif %}</td>
+    <td><form method="POST" action="/admin/verify-ai/{{ d.id }}" style="display:inline"><button class="btn-small" style="background:var(--primary);color:#fff;border:none">AI识别</button></form></td>
+            <td>{% if d.status=='pending' %}<form method="POST" action="/admin/verification/{{ d.id }}/approved" style="display:inline"><button class="btn-small btn-success">通过</button></form><form method="POST" action="/admin/verification/{{ d.id }}/rejected" style="display:inline"><button class="btn-small btn-danger">拒绝</button></form>{% endif %}</td>
 </tr>{% else %}<tr><td colspan="7" class="empty-cell">暂无认证申请</td></tr>{% endfor %}
 </tbody></table>{% endblock %}

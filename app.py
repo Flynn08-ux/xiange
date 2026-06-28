@@ -710,6 +710,43 @@ def admin_parent_center(pid):
     return render_template("parent_center.html", parent=parent,
         appointments=appointments, feedback=feedback,
         admin=admin_ctx(), user=True, role="admin")
+
+
+@app.route("/admin/verify-ai/<int:doc_id>", methods=["POST"])
+@admin_required
+def admin_verify_ai(doc_id):
+    from database import get_db as _db
+    from universities import UNIVERSITIES
+    import importlib
+    try:
+        ai_mod = importlib.import_module("ai_verify")
+    except:
+        flash("AI module not found", "error")
+        return redirect(url_for("admin_verification"))
+    
+    db = _db()
+    doc = db.execute("SELECT * FROM verification_docs WHERE id=?", (doc_id,)).fetchone()
+    db.close()
+    if not doc:
+        flash("Document not found", "error")
+        return redirect(url_for("admin_verification"))
+    
+    fp = os.path.join(UPLOAD_FOLDER, doc["filepath"])
+    if not os.path.exists(fp):
+        flash("File not found", "error")
+        return redirect(url_for("admin_verification"))
+    
+    result, info = ai_mod.verify_document(fp, UNIVERSITIES)
+    
+    if result is True:
+        update_verification_status(doc_id, "approved")
+        flash(f"AI matched university: {info}", "success")
+    elif result is False:
+        flash(f"AI no match. Extracted text: {info[:100]}...", "info")
+    else:
+        flash(f"AI error: {info}", "warning")
+    
+    return redirect(url_for("admin_verification"))
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")
