@@ -55,6 +55,15 @@ def login_required(role=None):
     return decorator
 
 # ── API ──
+
+@app.route("/api/send-sms", methods=["POST"])
+def api_send_sms():
+    phone = request.form.get("phone","").strip()
+    if not phone or len(phone) < 5:
+        return jsonify({"error": "手机号无效"}), 400
+    code = str(random.randint(100000, 999999))
+    save_sms_code(phone, code)
+    return jsonify({"message": f"验证码已发送到 {phone[:3]}****{phone[-4:]}", "code": code})
 @app.route("/api/regions")
 def api_regions():
     return jsonify(region_info())
@@ -644,7 +653,10 @@ def parent_register():
         if not d["username"]: errors.append("请输入用户名")
         if not d["password"] or len(d["password"]) < 4: errors.append("密码至少4位")
         if not d["parent_name"]: errors.append("请输入您的姓名")
-        if not d["phone"]: errors.append("请输入手机号（用于找回密码）")
+        if not d["phone"]: errors.append("请输入手机号")
+        sms_code = request.form.get("sms_code","").strip()
+        if not sms_code or not verify_sms_code(d["phone"], sms_code):
+            errors.append("手机验证码错误或已过期")
         if not d["email"] or not re.match(r"[^@]+@[^@]+\.[^@]+", d["email"]): errors.append("请输入有效邮箱")
         if not d["student_name"]: errors.append("请输入学生姓名")
         if not d["subjects"]: errors.append("请输入需要辅导的科目")

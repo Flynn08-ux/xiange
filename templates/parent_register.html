@@ -1,4 +1,16 @@
-{% extends "base.html" %}{% block title %}注册成为家长 — 弦歌{% endblock %}{% block content %}
+{% extends "base.html" %}{% block title %}注册成为家长 — 弦歌<style>.phone-row{display:flex;gap:8px}.phone-row input{flex:1}.phone-row button{white-space:nowrap}</style>
+<script>
+function sendSms(){
+    const phone = document.querySelector('[name="phone"]').value;
+    if(!phone||phone.length<11){alert('请输入11位手机号');return;}
+    const btn=document.querySelector('#sendSmsBtn');
+    btn.disabled=true;btn.textContent='发送中...';
+    fetch('/api/send-sms',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'phone='+encodeURIComponent(phone)})
+    .then(r=>r.json()).then(d=>{alert(d.message||'已发送');btn.textContent='已发送';setTimeout(()=>{btn.disabled=false;btn.textContent='重新发送'},30000)})
+    .catch(()=>{btn.disabled=false;btn.textContent='发送失败'});
+}
+</script>
+{% endblock %}{% block content %}
 <h1 class="page-title">注册成为家长</h1>
 <p class="page-subtitle">填写学生信息，找合适的老师</p>
 <form class="register-form" method="POST">
@@ -8,7 +20,7 @@
     </div>
     <div class="form-section"><h2>家长信息</h2>
         <div class="form-group"><label>您的姓名 *</label><input type="text" name="parent_name" value="{{ data.parent_name if data else '' }}" required></div>
-        <div class="form-row"><div class="form-group"><label>手机号 *</label><input type="tel" name="phone" value="{{ data.phone if data else '' }}" required placeholder="用于找回密码和联系"></div>
+        <div class="form-row"><div class="form-group"><label>手机号 *</label><div class="phone-row"><input type="tel" name="phone" value="{{ data.phone if data else '' }}" required placeholder="11位手机号"><button type="button" id="sendSmsBtn" onclick="sendSms()" class="btn btn-outline" style="flex-shrink:0;padding:8px 16px">发送验证码</button></div></div><div class="form-group"><label>短信验证码</label><input type="text" name="sms_code" required placeholder="输入6位验证码" maxlength="6"></div>
         <div class="form-group"><label>邮箱 *</label><input type="email" name="email" value="{{ data.email if data else '' }}" required></div></div>
     </div>
     <div class="form-section"><h2>学生信息</h2>
@@ -32,4 +44,16 @@
     <div class="form-actions"><button type="submit" class="btn btn-primary btn-large">注册</button>
         <p class="login-hint">已有账号？<a href="/login">去登录</a></p>
     </div>
-</form>{% endblock %}
+</form><style>.phone-row{display:flex;gap:8px}.phone-row input{flex:1}.phone-row button{white-space:nowrap}</style>
+<script>
+function sendSms(){
+    const phone = document.querySelector('[name="phone"]').value;
+    if(!phone||phone.length<11){alert('请输入11位手机号');return;}
+    const btn=document.querySelector('#sendSmsBtn');
+    btn.disabled=true;btn.textContent='发送中...';
+    fetch('/api/send-sms',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'phone='+encodeURIComponent(phone)})
+    .then(r=>r.json()).then(d=>{alert(d.message||'已发送');btn.textContent='已发送';setTimeout(()=>{btn.disabled=false;btn.textContent='重新发送'},30000)})
+    .catch(()=>{btn.disabled=false;btn.textContent='发送失败'});
+}
+</script>
+{% endblock %}
