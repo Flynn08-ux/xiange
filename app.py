@@ -866,6 +866,30 @@ def admin_login_key():
         if ajax: return jsonify({"status":"error","message":"密钥错误"})
         flash("密钥错误","error")
     return render_template("admin_key.html")
+
+
+@app.route("/admin/qrcodes", methods=["GET","POST"])
+@admin_required
+def admin_qrcodes():
+    if request.method == "POST":
+        for key in ["alipay", "wechat"]:
+            if key in request.files:
+                f = request.files[key]
+                if f and f.filename:
+                    ext = f.filename.rsplit(".",1)[1].lower() if "." in f.filename else "png"
+                    fn = f"qr_{key}.{ext}"
+                    f.save(os.path.join(UPLOAD_FOLDER, fn))
+        flash("二维码已更新","success")
+        return redirect(url_for("admin_qrcodes"))
+    alipay_exists = os.path.exists(os.path.join(UPLOAD_FOLDER, "qr_alipay.png"))
+    wechat_exists = os.path.exists(os.path.join(UPLOAD_FOLDER, "qr_wechat.png"))
+    return render_template("admin_qrcodes.html", alipay=alipay_exists, wechat=wechat_exists, admin=admin_ctx())
+
+@app.route("/payment")
+def payment():
+    alipay = os.path.exists(os.path.join(UPLOAD_FOLDER, "qr_alipay.png"))
+    wechat = os.path.exists(os.path.join(UPLOAD_FOLDER, "qr_wechat.png"))
+    return render_template("payment.html", alipay=alipay, wechat=wechat, admin=admin_ctx())
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")

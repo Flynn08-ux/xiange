@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}付款{% endblock %}{% block content %}
+<h1 class="page-title" style="text-align:center">扫码付款</h1>
+<p style="text-align:center;color:var(--text2);margin-bottom:24px">请用支付宝或微信扫码支付</p>
+<div style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;max-width:600px;margin:0 auto">
+    {% if alipay %}
+    <div style="text-align:center">
+        <h3 style="margin-bottom:8px;color:#1677ff">支付宝</h3>
+        <img src="/uploads/qr_alipay.png" style="width:200px;height:200px;border:2px solid #e8e4ed;border-radius:12px;padding:8px">
+    </div>
+    {% endif %}
+    {% if wechat %}
+    <div style="text-align:center">
+        <h3 style="margin-bottom:8px;color:#07c160">微信支付</h3>
+        <img src="/uploads/qr_wechat.png" style="width:200px;height:200px;border:2px solid #e8e4ed;border-radius:12px;padding:8px">
+    </div>
+    {% endif %}
+    {% if not alipay and not wechat %}<p style="color:var(--text2)">管理员暂未上传收款码</p>{% endif %}
+</div>{% endblock %}

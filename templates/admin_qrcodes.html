@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}收款码管理{% endblock %}{% block content %}
+<div class="admin-bar"><h1>收款二维码管理</h1>
+<div class="admin-nav"><a href="/admin">概览</a><a href="/admin/teachers">教师</a><a href="/admin/parents">家长</a>
+<a href="/admin/appointments">申请</a><a href="/admin/fees">费用</a><a href="/admin/blacklist">黑名单</a>
+<a href="/admin/verification">认证</a><a href="/admin/qrcodes" class="active">收款码</a><a href="/admin/logout">退出</a></div></div>
+<div class="card-section"><h3>支付宝收款码</h3>
+<form method="POST" enctype="multipart/form-data">
+    <div class="form-group"><input type="file" name="alipay" accept="image/*"></div>
+    <button type="submit" class="btn btn-primary">上传支付宝二维码</button>
+</form>
+{% if alipay %}<p style="margin-top:8px;font-size:.82rem;color:var(--success)">✅ 已上传</p>{% endif %}</div>
+<div class="card-section"><h3>微信收款码</h3>
+<form method="POST" enctype="multipart/form-data">
+    <div class="form-group"><input type="file" name="wechat" accept="image/*"></div>
+    <button type="submit" class="btn btn-primary">上传微信二维码</button>
+</form>
+{% if wechat %}<p style="margin-top:8px;font-size:.82rem;color:var(--success)">✅ 已上传</p>{% endif %}</div>
+<p style="font-size:.85rem;color:var(--text2);margin-top:16px">上传后用户可在 /payment 页面扫码付款</p>{% endblock %}
