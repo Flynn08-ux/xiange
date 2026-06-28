@@ -860,7 +860,7 @@ def admin_sms_verify():
             flash(f"\u6b22\u8fce\u56de\u6765\uff0c{a['name']}", "success")
             return redirect(url_for("admin_dashboard"))
         flash("\u77ed\u4fe1\u9a8c\u8bc1\u7801\u9519\u8bef", "error")
-    return render_template("admin_sms.html")
+    return render_template("admin_sms.html", test_code=session.get("admin_test_code",""), phone=session.get("admin_dual_phone_1",""))
 
 
 @app.route("/admin/login/dual-sms", methods=["GET","POST"])
@@ -881,7 +881,9 @@ def admin_dual_sms_verify():
         flash("\u9a8c\u8bc1\u7801\u9519\u8bef\uff0c\u8bf7\u91cd\u8bd5","error")
     return render_template("admin_dual_sms.html",
         phone1=session.get("admin_dual_phone_1",""),
-        phone2=session.get("admin_dual_phone_2",""))
+        phone2=session.get("admin_dual_phone_2",""),
+        test_code1=session.get("admin_test_code1",""),
+        test_code2=session.get("admin_test_code2",""))
 
 
 @app.route("/admin/login/resend-sms", methods=["POST"])
