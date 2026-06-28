@@ -16,8 +16,8 @@
             <div class="checkbox-grid">{% for s in subjects %}<label class="checkbox-item"><input type="checkbox" name="subjects" value="{{ s }}" {% if data and s in data.get('subjects','') %}checked{% endif %}>{{ s }}</label>{% endfor %}</div>
         </div>
         <div class="form-row"><div class="form-group"><label>毕业院校</label>
-            <select name="university" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg)">
-                <option value="">请选择或手填</option>{% for u in unis %}<option value="{{ u }}" {% if data and data.university==u %}selected{% endif %}>{{ u }}</option>{% endfor %}</select>
+            <input type="text" name="university" list="uniList" value="{{ data.university if data else '' }}" placeholder="输入学校名称搜索" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg)">
+            <datalist id="uniList">{% for u in unis %}<option value="{{ u }}">{% endfor %}</datalist>
         </div>
         <div class="form-group"><label>教育背景</label><input type="text" name="education" value="{{ data.education if data else '' }}" placeholder="如：XX专业 本科"></div></div>
         <div class="form-row"><div class="form-group"><label>教学经验</label><input type="text" name="experience" value="{{ data.experience if data else '' }}" placeholder="如：3年家教经验"></div>

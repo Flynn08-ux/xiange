@@ -682,6 +682,34 @@ def parent_register():
             else: flash(f"注册失败：{e}", "error")
             return render_template("parent_register.html", grades=GRADES, provinces=get_provinces(), data=d), 400
     return render_template("parent_register.html", grades=GRADES, provinces=get_provinces())
+
+
+@app.route("/admin/teacher/<int:tid>/center")
+@admin_required
+def admin_teacher_center(tid):
+    teacher = get_teacher_by_id(tid)
+    if not teacher: flash("教师不存在","error"); return redirect(url_for("admin_teachers"))
+    appointments = get_teacher_appointments(tid)
+    feedback = get_feedback_for_teacher(tid)
+    stats = get_teacher_stats(tid)
+    subjects = [s.strip() for s in teacher["subjects"].split(",") if s.strip()]
+    available = get_available_earnings(tid)
+    coupons = get_teacher_coupons(tid)
+    return render_template("teacher_center.html", teacher=teacher, stats=stats,
+        appointments=appointments, feedback=feedback, coupons=coupons,
+        available=available, subjects=subjects,
+        admin=admin_ctx(), user=True, role="admin")
+
+@app.route("/admin/parent/<int:pid>/center")
+@admin_required
+def admin_parent_center(pid):
+    parent = get_parent(pid)
+    if not parent: flash("家长不存在","error"); return redirect(url_for("admin_parents"))
+    appointments = get_parent_appointments(pid)
+    feedback = get_feedback_for_parent(pid)
+    return render_template("parent_center.html", parent=parent,
+        appointments=appointments, feedback=feedback,
+        admin=admin_ctx(), user=True, role="admin")
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")

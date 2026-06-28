@@ -8,6 +8,14 @@
     </div>
 </div>
 
+
+<!-- School Verification Upload -->
+<div class="card-section">
+    <h3>🎓 学校认证</h3>
+    <p style="font-size:.82rem;color:var(--text2);margin-bottom:8px">上传学生证、毕业证、学位证或教师资格证，供管理员验证学校信息</p>
+    <a href="/upload/teacher/{{ teacher.id }}" class="btn btn-outline" style="font-size:.82rem">上传认证材料</a>
+</div>
+
 {% endblock %}{% block content %}
 <div class="center-header">
     <div><h1>{{ teacher.name }} 的家教中心</h1>
@@ -98,6 +106,14 @@
         <a href="/upload/teacher/{{ teacher.id }}" class="btn btn-outline" style="font-size:.82rem">上传学校认证</a>
         <a href="/settings/payment" class="btn btn-outline" style="font-size:.82rem">收款账户绑定</a>
     </div>
+</div>
+
+
+<!-- School Verification Upload -->
+<div class="card-section">
+    <h3>🎓 学校认证</h3>
+    <p style="font-size:.82rem;color:var(--text2);margin-bottom:8px">上传学生证、毕业证、学位证或教师资格证，供管理员验证学校信息</p>
+    <a href="/upload/teacher/{{ teacher.id }}" class="btn btn-outline" style="font-size:.82rem">上传认证材料</a>
 </div>
 
 {% endblock %}
