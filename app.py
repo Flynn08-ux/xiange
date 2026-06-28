@@ -1086,3 +1086,4 @@ def payment_settings():
                            user_type=user_type, uid=uid,
                            admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
 
+
