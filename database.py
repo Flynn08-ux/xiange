@@ -805,28 +805,6 @@ def delete_admin(aid):
     conn.commit(); conn.close()
     return True
 
-def get_admin_stats():
-    conn = get_db()
-    s = lambda q: conn.execute(q).fetchone()[0]
-    stats = {
-        "teachers": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 "),
-        "pending_fees": s("SELECT COUNT(*) FROM teachers WHERE is_active=1 "),
-        "teachers_total": s("SELECT COUNT(*) FROM teachers WHERE is_active=1"),
-        "parents": s("SELECT COUNT(*) FROM parents WHERE is_active=1"),
-        "appointments": s("SELECT COUNT(*) FROM appointments"),
-        "paid": s("SELECT COUNT(*) FROM appointments WHERE status='paid'"),
-        "completed": s("SELECT COUNT(*) FROM appointments WHERE status='completed'"),
-        "refunded": s("SELECT COUNT(*) FROM appointments WHERE status='refunded'"),
-        "revenue": s("SELECT COALESCE(SUM(amount),0) FROM earnings WHERE status='withdrawn'"),
-        "fee_revenue": s("SELECT COALESCE(SUM(amount),0) FROM teacher_fees WHERE paid=1"),
-        "pending_earnings": s("SELECT COALESCE(SUM(amount),0) FROM earnings WHERE status IN ('available','pending')"),
-        "admins": s("SELECT COUNT(*) FROM admins WHERE is_active=1"),
-        "blacklist": s("SELECT COUNT(*) FROM blacklist"),
-        "compensation": s("SELECT COALESCE(SUM(compensation),0) FROM late_payments"),
-    }
-    conn.close()
-    return stats
-
 def get_all_teachers_admin():
     conn = get_db()
     rows = conn.execute("SELECT * FROM teachers ORDER BY created_at DESC").fetchall()
