@@ -17,6 +17,7 @@
                 <a href="/">首页</a>
                 <a href="/teachers">找老师</a>
                 <a href="/register">成为老师</a>
+                <a href="/parent/register">成为家长</a>
                 {% if user and role == 'teacher' %}<a href="/teacher/center">家教中心</a>{% endif %}
                 {% if user and role == 'parent' %}<a href="/parent/center">家校中心</a>{% endif %}
                 {% if not user %}<a href="/login">登录</a>{% endif %}

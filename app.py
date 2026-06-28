@@ -1,4 +1,5 @@
 import os, re, random
+from datetime import timedelta
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from database import (
@@ -23,6 +24,7 @@ from universities import UNIVERSITIES
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24).hex()
+app.permanent_session_lifetime = timedelta(hours=1)
 
 SUBJECTS = [
     "\u8bed\u6587","\u6570\u5b66","\u82f1\u8bed","\u7269\u7406","\u5316\u5b66","\u751f\u7269",
@@ -111,6 +113,7 @@ def login():
             session["role"] = user["role"]
             session["ref_id"] = user["ref_id"]
             session["username"] = username
+            session.permanent = True
             if user["role"] == "teacher":
                 return redirect(url_for("teacher_center"))
             elif user["role"] == "parent":
@@ -335,6 +338,7 @@ def admin_login_view():
         a = admin_login(username, password)
         if a:
             session["admin_id"] = a["id"]
+            session.permanent = True
             flash(f"\u6b22\u8fce\u56de\u6765\uff0c{a['name']}","success")
             return redirect(url_for("admin_dashboard"))
         flash("\u7528\u6237\u540d\u6216\u5bc6\u7801\u9519\u8bef","error")
@@ -615,6 +619,57 @@ def parent_buy_lead(teacher_id):
         bid = buy_lead("parent", pid, "teacher", teacher_id, fee)
         flash(f"\u8d2d\u4e70\u6210\u529f\uff01\u5df2\u652f\u4ed8{fee}\u5143\uff0c\u5df2\u83b7\u5f97\u8001\u5e08\u8054\u7cfb\u65b9\u5f0f", "success")
     return redirect(url_for("parent_center"))
+
+
+@app.route("/parent/register", methods=["GET","POST"])
+def parent_register():
+    if request.method == "POST":
+        d = {
+            "username": request.form.get("username","").strip(),
+            "password": request.form.get("password","").strip(),
+            "parent_name": request.form.get("parent_name","").strip(),
+            "email": request.form.get("email","").strip(),
+            "phone": request.form.get("phone","").strip(),
+            "student_name": request.form.get("student_name","").strip(),
+            "student_grade": request.form.get("student_grade","").strip(),
+            "student_level": request.form.get("student_level","").strip(),
+            "subjects": request.form.get("subjects","").strip(),
+            "province": request.form.get("province","").strip(),
+            "city": request.form.get("city","").strip(),
+            "district": request.form.get("district","").strip(),
+            "requirements": request.form.get("requirements","").strip(),
+            "budget": request.form.get("budget", type=int),
+        }
+        errors = []
+        if not d["username"]: errors.append("请输入用户名")
+        if not d["password"] or len(d["password"]) < 4: errors.append("密码至少4位")
+        if not d["parent_name"]: errors.append("请输入您的姓名")
+        if not d["phone"]: errors.append("请输入手机号（用于找回密码）")
+        if not d["email"] or not re.match(r"[^@]+@[^@]+\.[^@]+", d["email"]): errors.append("请输入有效邮箱")
+        if not d["student_name"]: errors.append("请输入学生姓名")
+        if not d["subjects"]: errors.append("请输入需要辅导的科目")
+        if errors:
+            for e in errors: flash(e, "error")
+            return render_template("parent_register.html", grades=GRADES, provinces=get_provinces(), data=d), 400
+        try:
+            pid, err = add_parent(d)
+            if err:
+                flash(err, "error")
+                return render_template("parent_register.html", grades=GRADES, provinces=get_provinces(), data=d), 400
+            # Auto login
+            user = login_user(d["username"], d["password"])
+            if user:
+                session["user_id"] = user["id"]
+                session["role"] = "parent"
+                session["ref_id"] = pid
+                session.permanent = True
+            flash("注册成功！欢迎加入弦歌 🎉 建议您先上传学生证件并签署保证书", "success")
+            return redirect(url_for("parent_center"))
+        except Exception as e:
+            if "UNIQUE" in str(e): flash("用户名或邮箱已被注册", "error")
+            else: flash(f"注册失败：{e}", "error")
+            return render_template("parent_register.html", grades=GRADES, provinces=get_provinces(), data=d), 400
+    return render_template("parent_register.html", grades=GRADES, provinces=get_provinces())
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")

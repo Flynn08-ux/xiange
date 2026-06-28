@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% block title %}注册成为家长 — 弦歌{% endblock %}{% block content %}
+<h1 class="page-title">注册成为家长</h1>
+<p class="page-subtitle">填写学生信息，找合适的老师</p>
+<form class="register-form" method="POST">
+    <div class="form-section"><h2>创建账号</h2>
+        <div class="form-row"><div class="form-group"><label>用户名 *</label><input type="text" name="username" value="{{ data.username if data else '' }}" required></div>
+        <div class="form-group"><label>密码 *</label><input type="password" name="password" value="{{ data.password if data else '' }}" required minlength="4"></div></div>
+    </div>
+    <div class="form-section"><h2>家长信息</h2>
+        <div class="form-group"><label>您的姓名 *</label><input type="text" name="parent_name" value="{{ data.parent_name if data else '' }}" required></div>
+        <div class="form-row"><div class="form-group"><label>手机号 *</label><input type="tel" name="phone" value="{{ data.phone if data else '' }}" required placeholder="用于找回密码和联系"></div>
+        <div class="form-group"><label>邮箱 *</label><input type="email" name="email" value="{{ data.email if data else '' }}" required></div></div>
+    </div>
+    <div class="form-section"><h2>学生信息</h2>
+        <div class="form-row"><div class="form-group"><label>学生姓名 *</label><input type="text" name="student_name" value="{{ data.student_name if data else '' }}" required></div>
+        <div class="form-group"><label>年级</label><select name="student_grade"><option value="">请选择</option>{% for g in grades %}<option value="{{ g }}" {% if data and data.student_grade==g %}selected{% endif %}>{{ g }}</option>{% endfor %}</select></div></div>
+        <div class="form-row"><div class="form-group"><label>学生目前水平</label><select name="student_level"><option value="">请选择</option><option value="基础薄弱" {% if data and data.student_level=='基础薄弱' %}selected{% endif %}>基础薄弱</option><option value="中等" {% if data and data.student_level=='中等' %}selected{% endif %}>中等</option><option value="良好" {% if data and data.student_level=='良好' %}selected{% endif %}>良好</option><option value="拔尖" {% if data and data.student_level=='拔尖' %}selected{% endif %}>拔尖</option></select></div>
+        <div class="form-group"><label>需要辅导的科目 *</label><input type="text" name="subjects" value="{{ data.subjects if data else '' }}" required placeholder="如：数学、英语"></div></div>
+    </div>
+    <div class="form-section"><h2>地区与要求</h2>
+        <div class="form-row"><div class="form-group"><label>省份</label><select name="province"><option value="">请选择</option>{% for p in provinces %}<option value="{{ p }}" {% if data and data.province==p %}selected{% endif %}>{{ p }}</option>{% endfor %}</select></div>
+        <div class="form-group"><label>城市</label><input type="text" name="city" placeholder="城市" value="{{ data.city if data else '' }}"></div></div>
+        <div class="form-group"><label>具体要求</label><textarea name="requirements" rows="3">{{ data.requirements if data else '' }}</textarea></div>
+        <div class="form-group"><label>预算（元/小时）</label><input type="number" name="budget" value="{{ data.budget if data else '' }}" min="0" step="10" placeholder="您愿意支付的课时费"></div>
+    </div>
+    <div class="form-section" style="background:#f8f6ff;border-radius:12px;padding:16px;border:1px solid #e8e4ff">
+        <p style="font-size:.85rem;color:var(--text2);line-height:1.7">注册完成后，您可以在家校中心：<br>
+        📸 <strong>上传学生校园卡</strong>验证身份<br>
+        📝 <strong>签署教学保证书</strong>（承诺不伤害老师）<br>
+        🔍 <strong>浏览老师信息</strong>并购买联系方式</p>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary btn-large">注册</button>
+        <p class="login-hint">已有账号？<a href="/login">去登录</a></p>
+    </div>
+</form>{% endblock %}

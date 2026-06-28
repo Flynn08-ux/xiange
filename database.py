@@ -39,6 +39,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             parent_name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, phone TEXT,
             student_name TEXT NOT NULL, student_grade TEXT,
+            student_level TEXT,
             subjects TEXT NOT NULL, province TEXT, city TEXT, district TEXT,
             requirements TEXT, budget INTEGER,
             late_count INTEGER DEFAULT 0,
@@ -320,10 +321,10 @@ def pay_info_fee(tid, coupon_id=None):
 # ── Parents ──
 def add_parent(d):
     conn = get_db()
-    conn.execute("""INSERT INTO parents (parent_name,email,phone,student_name,student_grade,
-        subjects,province,city,district,requirements,budget) VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+    conn.execute("""INSERT INTO parents (parent_name,email,phone,student_name,student_grade,student_level,
+        subjects,province,city,district,requirements,budget) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
         (d["parent_name"],d["email"],d.get("phone",""),d["student_name"],d.get("student_grade",""),
-         d["subjects"],d.get("province",""),d.get("city",""),d.get("district",""),
+         d.get("student_level",""),d["subjects"],d.get("province",""),d.get("city",""),d.get("district",""),
          d.get("requirements",""),d.get("budget")))
     conn.commit()
     pid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]

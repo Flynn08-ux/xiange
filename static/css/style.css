@@ -55,10 +55,10 @@ a:hover{color:var(--primary-light)}
     position:sticky;top:0;z-index:100
 }
 .header-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
-.logo-wrap{display:flex;align-items:baseline;gap:4px}
+.logo-wrap{display:flex;align-items:baseline;gap:2px}
 .logo{font-size:1.25rem;font-weight:800;color:var(--primary);letter-spacing:-.5px;transition:all .2s}
 .logo:hover{color:var(--primary-dark)}
-.logo-tag{font-size:.7rem;color:var(--text2);font-weight:400;letter-spacing:.2px;padding:2px 8px;background:var(--bg);border-radius:4px;margin-left:2px;white-space:nowrap}
+.logo-tag{font-size:.7rem;color:var(--text2);font-weight:400;letter-spacing:.2px;padding:2px 6px;background:var(--bg);border-radius:4px;margin-left:0px;white-space:nowrap}
 .nav{display:flex;gap:2px}
 .nav a{padding:7px 14px;border-radius:10px;color:var(--text2);font-size:.82rem;font-weight:500;transition:all .2s}
 .nav a:hover{background:rgba(91,60,158,0.06);color:var(--primary)}
