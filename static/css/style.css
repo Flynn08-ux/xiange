@@ -55,7 +55,7 @@ a:hover{color:var(--primary-light)}
     position:sticky;top:0;z-index:100
 }
 .header-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
-.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-wrap{display:flex;align-items:baseline;gap:4px}
 .logo{font-size:1.25rem;font-weight:800;color:var(--primary);letter-spacing:-.5px;transition:all .2s}
 .logo:hover{color:var(--primary-dark)}
 .logo-tag{font-size:.7rem;color:var(--text2);font-weight:400;letter-spacing:.2px;padding:2px 8px;background:var(--bg);border-radius:4px;margin-left:2px;white-space:nowrap}
@@ -441,6 +441,79 @@ label{display:block;font-size:.82rem;font-weight:500;color:var(--text2);margin-b
 .footer-inner p{font-size:.78rem;color:var(--text2)}
 
 /* ── Responsive ── */
+
+/* ── Premium Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes countUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes stepGlow{0%,100%{box-shadow:0 0 0 0 rgba(91,60,158,0.3)}50%{box-shadow:0 0 0 6px rgba(91,60,158,0.1)}}
+
+/* Animated page transition */
+.hero{animation:fadeUp .7s ease}
+.hero-actions .btn:nth-child(1){animation:fadeUp .5s ease .2s both}
+.hero-actions .btn:nth-child(2){animation:fadeUp .5s ease .4s both}
+.stats-bar .stat-item:nth-child(1){animation:fadeUp .5s ease .3s both}
+.stats-bar .stat-item:nth-child(2){animation:fadeUp .5s ease .5s both}
+.stats-bar .stat-item:nth-child(3){animation:fadeUp .5s ease .7s both}
+
+/* Staggered card reveals */
+.teacher-card:nth-child(1){animation:scaleIn .4s ease .1s both}
+.teacher-card:nth-child(2){animation:scaleIn .4s ease .2s both}
+.teacher-card:nth-child(3){animation:scaleIn .4s ease .3s both}
+.teacher-card:nth-child(4){animation:scaleIn .4s ease .4s both}
+.teacher-card:nth-child(5){animation:scaleIn .4s ease .5s both}
+.teacher-card:nth-child(6){animation:scaleIn .4s ease .6s both}
+
+/* Step indicators with animation */
+.how-it-works .step:nth-child(1){animation:fadeUp .5s ease .2s both}
+.how-it-works .step:nth-child(2){animation:fadeUp .5s ease .4s both}
+.how-it-works .step:nth-child(3){animation:fadeUp .5s ease .6s both}
+.step-icon{animation:stepGlow 2s ease-in-out infinite;position:relative;z-index:1}
+
+/* Animated status badges */
+.apt-status{position:relative}
+.label-pending{animation:pulse 2s ease-in-out infinite;display:inline-block}
+
+/* Stat number count animation */
+.admin-stat-card{animation:scaleIn .4s ease both}
+.admin-stat-card:nth-child(1){animation-delay:.05s}
+.admin-stat-card:nth-child(2){animation-delay:.1s}
+.admin-stat-card:nth-child(3){animation-delay:.15s}
+.admin-stat-card:nth-child(4){animation-delay:.2s}
+.admin-stat-card:nth-child(5){animation-delay:.25s}
+.admin-stat-card:nth-child(6){animation-delay:.3s}
+
+/* Premium hover effects */
+.teacher-card{transition:all .35s cubic-bezier(.34,1.56,.64,1)}
+.card-avatar{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.teacher-card:hover .card-avatar{transform:scale(1.08)}
+
+.appointment-card{transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+.appointment-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-xl)}
+
+/* Sequential section reveals */
+.section{animation:fadeUp .5s ease both}
+.section:nth-child(1){animation-delay:.1s}
+.section:nth-child(2){animation-delay:.2s}
+.section:nth-child(3){animation-delay:.3s}
+
+/* Button press effect */
+.btn:active{transform:scale(.97)}
+
+/* Mini stat hover */
+.mini-stat{transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+.mini-stat:hover{transform:translateY(-3px) scale(1.02)}
+
+/* Timeline step animation */
+.status-timeline .status-step{animation:slideRight .3s ease both}
+.status-timeline .status-step:nth-child(1){animation-delay:.05s}
+.status-timeline .status-step:nth-child(2){animation-delay:.15s}
+.status-timeline .status-step:nth-child(3){animation-delay:.25s}
+.status-timeline .status-step:nth-child(4){animation-delay:.35s}
 @media(max-width:640px){
     .hero-content h1{font-size:1.8rem}
     .stats-bar{gap:24px;flex-wrap:wrap}
