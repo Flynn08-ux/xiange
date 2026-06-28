@@ -15,7 +15,7 @@ from database import (
     add_feedback, get_feedback_for_teacher, get_feedback_for_parent,
     get_available_earnings, create_withdrawal, get_withdrawals, process_withdrawal,
     get_teacher_coupons, get_stats,
-    save_sms_code, verify_sms_code, get_user_by_phone_role, update_user_password,
+    save_sms_code, verify_sms_code, phone_exists, get_user_by_phone_role, update_user_password,
     create_contract, get_contract, add_verification_doc, get_verification_docs,
     update_verification_status, save_payment_account, get_payment_accounts,
 )
@@ -654,6 +654,7 @@ def parent_register():
         if not d["password"] or len(d["password"]) < 4: errors.append("密码至少4位")
         if not d["parent_name"]: errors.append("请输入您的姓名")
         if not d["phone"]: errors.append("请输入手机号")
+        elif phone_exists(d["phone"]): errors.append("该手机号已被其他账号使用")
         sms_code = request.form.get("sms_code","").strip()
         if not sms_code or not verify_sms_code(d["phone"], sms_code):
             errors.append("手机验证码错误或已过期")

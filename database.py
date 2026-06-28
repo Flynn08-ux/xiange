@@ -1214,3 +1214,11 @@ def has_bought_contact(buyer_type, buyer_id, target_id):
     r = conn.execute("SELECT 1 FROM bought_leads WHERE buyer_type=? AND buyer_id=? AND target_id=?", (buyer_type,buyer_id,target_id)).fetchone()
     conn.close()
     return r is not None
+
+
+def phone_exists(phone):
+    conn = get_db()
+    t = conn.execute("SELECT 1 FROM teachers WHERE phone=? AND is_active=1", (phone,)).fetchone()
+    p = conn.execute("SELECT 1 FROM parents WHERE phone=? AND is_active=1", (phone,)).fetchone()
+    conn.close()
+    return t is not None or p is not None
