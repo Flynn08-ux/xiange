@@ -110,6 +110,24 @@ def teacher_detail(tid):
 def health():
     return "OK", 200
 
+
+@app.route("/admin")
+@admin_required
+def admin_dashboard():
+    try:
+        auto_pay_overdue()
+        stats = get_admin_stats()
+        admin = admin_ctx()
+        return render_template("admin_new.html", stats=stats, admin=admin)
+    except Exception as e:
+        import traceback
+        err = traceback.format_exc()
+        html = "<!DOCTYPE html><html><head><meta charset=utf-8><title>后台错误</title>"
+        html += "<style>body{font-family:monospace;padding:20px;background:#1a1a2e;color:#e0e0e0}h2{color:#e74c3c}pre{background:#16213e;padding:16px;border-radius:8px;overflow:auto;font-size:13px}</style></head>"
+        html += "<body><h2>⚠ 后台加载出错</h2><pre>" + err + "</pre>"
+        html += "<p><a href=/admin/login style=color:#5b9bd5>重新登录</a></p></body></html>"
+        return html, 500
+
 @app.route("/about")
 def about():
     return render_template("about.html", admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
