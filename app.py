@@ -830,22 +830,29 @@ def admin_parent_reset(pid):
 # ── Admin CAPTCHA ──
 @app.route("/admin/captcha")
 def admin_captcha():
-    from PIL import Image, ImageDraw
     import io, random
-    w, h = 160, 50
-    img = Image.new('RGB', (w, h), (248, 245, 249))
-    draw = ImageDraw.Draw(img)
-    code = ''.join(random.choices('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', k=4))
-    session['admin_captcha'] = code
-    for _ in range(4):
-        draw.line([(random.randint(0,w),random.randint(0,h)),(random.randint(0,w),random.randint(0,h))], fill=(200,190,210), width=2)
-    for i, ch in enumerate(code):
-        draw.text((15+i*38, random.randint(8,16)), ch, fill=(80,50,120))
-    for _ in range(80):
-        draw.point((random.randint(0,w),random.randint(0,h)), fill=(180,170,190))
-    buf = io.BytesIO()
-    img.save(buf, 'PNG'); buf.seek(0)
-    return send_file(buf, mimetype='image/png')
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        font = ImageFont.load_default()
+        w, h = 160, 50
+        img = Image.new('RGB', (w, h), (248, 245, 249))
+        draw = ImageDraw.Draw(img)
+        code = ''.join(random.choices('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', k=4))
+        session['admin_captcha'] = code
+        for _ in range(3):
+            draw.line([(random.randint(0,w),random.randint(0,h)),(random.randint(0,w),random.randint(0,h))], fill=(200,190,210), width=2)
+        for i, ch in enumerate(code):
+            draw.text((12+i*36, random.randint(8,16)), ch, fill=(80,50,120), font=font)
+        for _ in range(60):
+            draw.point((random.randint(0,w),random.randint(0,h)), fill=(180,170,190))
+        buf = io.BytesIO()
+        img.save(buf, 'PNG'); buf.seek(0)
+        return send_file(buf, mimetype='image/png')
+    except:
+        code = ''.join(random.choices('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', k=4))
+        session['admin_captcha'] = code
+        svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="160" height="50"><rect width="160" height="50" fill="#f8f5f9" rx="8"/><text x="12" y="32" font-size="28" fill="#503078" font-family="monospace" letter-spacing="8">{code}</text></svg>'
+        return svg, 200, {"Content-Type": "image/svg+xml"}
 
 # ── Admin SMS Verify ──
 @app.route("/admin/login/sms", methods=["GET","POST"])
