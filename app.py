@@ -546,10 +546,12 @@ def security_headers(response):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
 
+# Initialize database at module level (runs on gunicorn import)
+init_db()
+init_admin()
+
 if __name__ == "__main__":
-    init_db()
-    init_admin()
-    print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:8080")
+    print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port, debug=(os.environ.get("RENDER") is None))
