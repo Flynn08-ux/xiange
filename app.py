@@ -775,6 +775,33 @@ def admin_parent_delete(pid):
     admin_delete_parent(pid)
     flash("\u5df2\u5220\u9664\u8be5\u5bb6\u957f", "success")
     return redirect(url_for("admin_parents"))
+
+
+@app.route("/admin/teacher/<int:tid>/reset-password", methods=["POST"])
+@admin_required
+def admin_teacher_reset(tid):
+    from database import get_db as _db
+    pw = request.form.get("new_password","").strip()
+    if not pw or len(pw) < 4: flash("密码至少4位","error"); return redirect(url_for("admin_teachers"))
+    db = _db()
+    u = db.execute("SELECT username FROM users WHERE role='teacher' AND ref_id=?", (tid,)).fetchone()
+    db.close()
+    if u: update_user_password(u["username"], pw); flash(f"密码已重置: {pw}","success")
+    else: flash("用户不存在","error")
+    return redirect(url_for("admin_teachers"))
+
+@app.route("/admin/parent/<int:pid>/reset-password", methods=["POST"])
+@admin_required
+def admin_parent_reset(pid):
+    from database import get_db as _db
+    pw = request.form.get("new_password","").strip()
+    if not pw or len(pw) < 4: flash("密码至少4位","error"); return redirect(url_for("admin_parents"))
+    db = _db()
+    u = db.execute("SELECT username FROM users WHERE role='parent' AND ref_id=?", (pid,)).fetchone()
+    db.close()
+    if u: update_user_password(u["username"], pw); flash(f"密码已重置: {pw}","success")
+    else: flash("用户不存在","error")
+    return redirect(url_for("admin_parents"))
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")
