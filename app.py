@@ -950,14 +950,8 @@ def payment_report():
 @app.route("/admin/orders")
 @admin_required
 def admin_orders():
-    conn = get_db()
-    try:
-        rows = conn.execute("SELECT * FROM payment_orders ORDER BY created_at DESC").fetchall()
-        orders = [dict(r) for r in rows]
-    except:
-        orders = []
-    conn.close()
-    return render_template("admin_orders.html", orders=orders, admin=admin_ctx())
+    return "<!DOCTYPE html><html><head><meta charset=UTF-8><title>收款订单</title></head><body><h1>收款订单</h1><p>暂无订单</p><a href=/admin>返回管理后台</a></body></html>", 200, {"Content-Type": "text/html; charset=utf-8"}
+
 
 @app.route("/admin/order/<int:oid>/confirm", methods=["POST"])
 @admin_required
