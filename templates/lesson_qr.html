@@ -1,25 +1,52 @@
-{% extends "base.html" %}{% block title %}上课二维码{% endblock %}{% block content %}
-<div class="login-page">
-    <div class="login-form" style="text-align:center">
-        <h2 style="font-size:1.3rem;margin-bottom:8px">📚 第{{ lesson.lesson_number }}节课</h2>
-        <p style="color:var(--text2);margin-bottom:16px">{{ teacher.name }} · {{ lesson.subject }}</p>
-        
-        {% if lesson.status == 'pending' %}
-        <div style="margin:16px 0">
-            <p style="font-size:.82rem;color:var(--text2);margin-bottom:8px">请老师用手机扫描下方二维码确认上课</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={{ verify_url|urlencode }}"
-                 alt="QR Code" style="border:2px solid var(--border);border-radius:12px;max-width:250px">
-        </div>
-        <p style="font-size:.78rem;color:var(--text2);word-break:break-all">验证链接：<a href="{{ verify_url }}">{{ verify_url }}</a></p>
-        <div class="apt-status label-pending" style="margin-top:12px;font-size:.9rem">⏳ 等待老师扫码确认</div>
-        
-        {% else %}
-        <div style="margin:20px 0;padding:16px;background:#ecfdf5;border-radius:12px">
-            <p style="font-size:1.2rem;color:var(--success)">✅ 已确认上课</p>
-            <p style="font-size:.82rem;color:var(--text2)">确认时间：{{ lesson.verified_at[:16] if lesson.verified_at else '' }}</p>
-        </div>
-        {% endif %}
-        
-        <a href="javascript:history.back()" class="btn btn-secondary" style="margin-top:12px">← 返回</a>
+{% extends "base.html" %}{% block title %}上课签到{% endblock %}{% block content %}
+<style>
+.qr-page{max-width:480px;margin:24px auto;text-align:center}
+.qr-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:32px 24px;box-shadow:var(--shadow-lg)}
+.qr-card h2{font-size:1.3rem;margin-bottom:4px;color:var(--text)}
+.qr-sub{font-size:.85rem;color:var(--text2);margin-bottom:20px}
+.qr-image{display:inline-block;padding:12px;background:#f9f8fa;border-radius:16px;margin-bottom:16px}
+.qr-image img{display:block;max-width:220px;border-radius:8px}
+.qr-status{padding:12px 16px;border-radius:12px;margin:12px 0;font-size:.9rem;font-weight:600}
+.qr-status.pending{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.qr-status.done{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0}
+.qr-hint{font-size:.78rem;color:var(--text2);background:var(--bg);padding:12px;border-radius:10px;margin:16px 0;line-height:1.6}
+.qr-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.qr-actions .btn{min-width:100px}
+.token-text{font-family:monospace;font-size:.75rem;color:#8b8394;word-break:break-all;background:var(--bg);padding:8px 12px;border-radius:8px;margin-top:8px}
+</style>
+<div class="qr-page">
+<div class="qr-card">
+    <h2>第{{ lesson.lesson_number }}节课 · {{ lesson.subject }}</h2>
+    <p class="qr-sub">{{ teacher.name if teacher else '' }}</p>
+    
+    {% if lesson.status == 'pending' %}
+    <div class="qr-image">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={{ verify_url|urlencode }}" alt="上课签到二维码">
     </div>
-</div>{% endblock %}
+    <div class="qr-status pending">⏳ 等待老师扫码确认上课</div>
+    <div class="qr-hint">
+        <strong>家长操作：</strong>请将此二维码展示给老师扫描<br>
+        <strong>老师操作：</strong>扫描二维码即可确认上课，或在下方手动输入验证码
+    </div>
+    <div class="token-text">验证码：{{ lesson.token[:8] }}...</div>
+    
+    {% if role == 'teacher' or admin %}
+    <div style="margin-top:16px">
+        <a href="/lesson/verify/{{ lesson.token }}" class="btn btn-primary" style="width:100%;text-align:center"
+           onclick="return confirm('确认第{{ lesson.lesson_number }}节课已上？')">
+            ✅ 确认已上课
+        </a>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="qr-status done">✅ 已确认上课</div>
+    <p style="font-size:.82rem;color:var(--text2)">确认时间：{{ lesson.verified_at[:16] if lesson.verified_at else '' }}</p>
+    {% endif %}
+    
+    <div class="qr-actions">
+        <a href="javascript:history.back()" class="btn" style="border:1px solid var(--border);background:#fff;color:var(--text2)">← 返回</a>
+    </div>
+</div>
+</div>
+{% endblock %}

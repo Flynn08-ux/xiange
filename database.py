@@ -1276,6 +1276,29 @@ def admin_delete_teacher(teacher_id):
 
 
 # ── Notifications ──
+
+def get_pending_lessons_for_teacher(teacher_id):
+    """获取老师所有待确认的课程（已生成二维码但未验证）"""
+    conn = get_db()
+    rows = conn.execute("""
+        SELECT l.*, a.subject, a.budget, a.parent_id, 
+               p.name as parent_name, a.teacher_id
+        FROM lessons l 
+        JOIN appointments a ON l.appointment_id = a.id 
+        JOIN parents p ON a.parent_id = p.id
+        WHERE a.teacher_id = ? AND l.status = 'pending'
+        ORDER BY l.created_at DESC
+    """, (teacher_id,)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def get_last_lesson_for_appointment(aid):
+    """获取某个申请最近一次的课程"""
+    conn = get_db()
+    r = conn.execute("SELECT * FROM lessons WHERE appointment_id=? ORDER BY created_at DESC LIMIT 1", (aid,)).fetchone()
+    conn.close()
+    return dict(r) if r else None
+
 def add_notification(user_type, user_id, title, message="", link=""):
     """添加通知"""
     conn = get_db()
