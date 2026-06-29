@@ -195,9 +195,11 @@ def init_db():
             status TEXT NOT NULL DEFAULT 'pending',
             token TEXT NOT NULL UNIQUE,
             verified_at TEXT,
+            ended_at TEXT,
             created_at TEXT DEFAULT (datetime('now','localtime')),
             FOREIGN KEY (appointment_id) REFERENCES appointments(id)
         );
+        ALTER TABLE lessons ADD COLUMN ended_at TEXT;
 
     """)
     conn.commit()
@@ -1277,6 +1279,22 @@ def admin_delete_teacher(teacher_id):
 
 # ── Notifications ──
 
+
+def get_verified_lessons_for_teacher(teacher_id):
+    """获取老师已确认但未结束的课程"""
+    conn = get_db()
+    rows = conn.execute("""
+        SELECT l.*, a.subject, a.budget, a.parent_id, 
+               p.name as parent_name, a.teacher_id
+        FROM lessons l 
+        JOIN appointments a ON l.appointment_id = a.id 
+        JOIN parents p ON a.parent_id = p.id
+        WHERE a.teacher_id = ? AND l.status = 'completed'
+        ORDER BY l.created_at DESC
+    """, (teacher_id,)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
 def get_pending_lessons_for_teacher(teacher_id):
     """获取老师所有待确认的课程（已生成二维码但未验证）"""
     conn = get_db()
@@ -1298,6 +1316,29 @@ def get_last_lesson_for_appointment(aid):
     r = conn.execute("SELECT * FROM lessons WHERE appointment_id=? ORDER BY created_at DESC LIMIT 1", (aid,)).fetchone()
     conn.close()
     return dict(r) if r else None
+
+
+def end_lesson(token):
+    """结束授课 - 老师结束授课后标记课程为已结束，通知家长"""
+    conn = get_db()
+    r = conn.execute("SELECT l.*, a.parent_id, a.teacher_id, a.subject FROM lessons l JOIN appointments a ON l.appointment_id=a.id WHERE l.token=? AND l.status='completed'", (token,)).fetchone()
+    if not r:
+        conn.close()
+        return None
+    conn.execute("UPDATE lessons SET status='ended', ended_at=datetime('now','localtime') WHERE id=?", (r["id"],))
+    conn.commit()
+    lesson = dict(r)
+    lesson["status"] = "ended"
+    conn.close()
+    
+    # Send notification to parent
+    from database import add_notification
+    add_notification("parent", lesson["parent_id"],
+        f"第{lesson['lesson_number']}节课已结束授课",
+        f"您的{lesson['subject']}课第{lesson['lesson_number']}节已由老师确认结束授课",
+        "/parent/center")
+    
+    return lesson
 
 def add_notification(user_type, user_id, title, message="", link=""):
     """添加通知"""

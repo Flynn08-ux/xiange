@@ -5,7 +5,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from database import (
     init_db, init_admin, login_user, check_blacklist, 
     add_teacher, get_teacher, get_teacher_by_id, get_all_teachers,
-    get_pending_lessons_for_teacher, get_last_lesson_for_appointment,
+    get_pending_lessons_for_teacher, get_verified_lessons_for_teacher,
+    get_last_lesson_for_appointment, end_lesson,
     get_teacher_stats, delete_teacher, get_unpaid_fee_teachers, pay_info_fee,
     add_parent, get_parent, get_parent_appointments, record_late_payment,
     admin_login, get_admin, get_all_admins, add_admin, delete_admin,
@@ -362,10 +363,11 @@ def teacher_center():
     available = get_available_earnings(tid)
     subjects = [s.strip() for s in teacher["subjects"].split(",") if s.strip()]
     pending_lessons = get_pending_lessons_for_teacher(tid)
+    verified_lessons = get_verified_lessons_for_teacher(tid)
     return render_template("teacher_center.html", teacher=teacher, stats=stats,
                            appointments=appointments, feedback=feedback, coupons=coupons,
                            available=available, subjects=subjects,
-                           pending_lessons=pending_lessons,
+                           pending_lessons=pending_lessons, verified_lessons=verified_lessons,
                            admin=admin_ctx(), user=session.get("user_id"), role=session.get("role"))
 
 @app.route("/teacher/pay-fee", methods=["GET","POST"])
@@ -645,6 +647,16 @@ def lesson_verify(token):
     if session.get("role") == "teacher":
         return redirect(url_for("teacher_center"))
     return redirect(url_for("index"))
+
+@app.route("/lesson/end/<token>", methods=["POST"])
+def lesson_end(token):
+    """Teacher ends a lesson after teaching is complete."""
+    result = end_lesson(token)
+    if result:
+        flash(f"\u7b2c{result['lesson_number']}\u8282\u8bfe\u5df2\u7ed3\u675f\u6388\u8bfe\uff0c\u5df2\u901a\u77e5\u5bb6\u957f","success")
+    else:
+        flash("\u65e0\u6cd5\u7ed3\u675f\u8be5\u8282\u8bfe\uff0c\u53ef\u80fd\u5df2\u7ecf\u7ed3\u675f\u4e86","error")
+    return redirect(url_for("teacher_center"))
 
 @app.route("/lesson/list/<int:aid>")
 def lesson_list(aid):

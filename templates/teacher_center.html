@@ -111,6 +111,30 @@
 </div>
 {% endif %}
 
+<!-- Verified Lessons (已确认但未结束) -->
+{% if verified_lessons %}
+<div class="card-section" style="border-left:3px solid var(--success)">
+    <h3 style="margin-bottom:12px;color:var(--success)">已确认待结束授课</h3>
+    <div style="display:flex;flex-direction:column;gap:8px">
+    {% for vl in verified_lessons %}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;animation:fadeUp .3s ease">
+            <div>
+                <strong style="font-size:.9rem">第{{ vl.lesson_number }}节课</strong>
+                <span style="font-size:.8rem;color:var(--text2);margin-left:8px">{{ vl.subject }} · {{ vl.parent_name }}</span>
+                <span style="font-size:.72rem;color:var(--success);margin-left:6px">✅ 已确认上课</span>
+            </div>
+            <form method="POST" action="/lesson/end/{{ vl.token }}" style="display:inline"
+                  onsubmit="return confirm('确认第{{ vl.lesson_number }}节课已结束授课？此操作不可撤销')">
+                <button type="submit" class="btn" style="padding:6px 18px;font-size:.82rem;background:linear-gradient(135deg,var(--warning),#ea580c);color:#fff;border:none">
+                    结束授课
+                </button>
+            </form>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <!-- Manual Token Input -->
 <div class="card-section">
     <h3 style="margin-bottom:8px">手动输入验证码</h3>
