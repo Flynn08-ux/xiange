@@ -199,10 +199,16 @@ def init_db():
             created_at TEXT DEFAULT (datetime('now','localtime')),
             FOREIGN KEY (appointment_id) REFERENCES appointments(id)
         );
-        ALTER TABLE lessons ADD COLUMN ended_at TEXT;
+        -- ended_at column added below via try/except
 
     """)
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 
@@ -223,6 +229,12 @@ def init_admin():
         else:
             conn.execute("UPDATE admins SET phone=? WHERE username=? AND (phone IS NULL OR phone='')", (phone, uname))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 def create_user(username, pw, role, ref_id):
     conn = get_db()
@@ -270,6 +282,12 @@ def add_teacher(d):
         return None, err
     conn.execute("INSERT INTO teacher_fees (teacher_id,amount) VALUES (?,?)", (tid, 50))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
     return tid, None
 
@@ -326,6 +344,12 @@ def delete_teacher(tid):
     conn.execute("UPDATE teachers SET is_active=0 WHERE id=?", (tid,))
     conn.execute("UPDATE users SET is_active=0 WHERE role='teacher' AND ref_id=?", (tid,))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 def get_unpaid_fee_teachers():
@@ -342,6 +366,12 @@ def pay_info_fee(tid, coupon_id=None):
         conn.execute("UPDATE coupons SET used=1,used_at=datetime('now','localtime') WHERE id=? AND teacher_id=? AND used=0", (coupon_id,tid))
     conn.execute("UPDATE teacher_fees SET paid=1,paid_at=datetime('now','localtime') WHERE id=(SELECT id FROM teacher_fees WHERE teacher_id=? ORDER BY id DESC LIMIT 1)", (tid,))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 # ── Parents ──
@@ -388,6 +418,12 @@ def record_late_payment(aid, pid, tid, days):
         conn.execute("INSERT INTO blacklist (user_type,ref_id,reason) VALUES ('parent',?,'逾期未支付超过3次')", (pid,))
         conn.execute("UPDATE users SET is_active=0 WHERE role='parent' AND ref_id=?", (pid,))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
     return p[0] if p else 0
 
@@ -492,6 +528,12 @@ def add_to_blacklist(user_type, ref_id, reason, admin_id):
         (user_type,ref_id,reason,admin_id))
     conn.execute("UPDATE users SET is_active=0 WHERE role=? AND ref_id=?", (user_type,ref_id))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 def remove_from_blacklist(bl_id):
@@ -501,6 +543,12 @@ def remove_from_blacklist(bl_id):
         conn.execute("UPDATE users SET is_active=1 WHERE role=? AND ref_id=?", (b["user_type"],b["ref_id"]))
         conn.execute("DELETE FROM blacklist WHERE id=?", (bl_id,))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 # ── Appointments ──
@@ -535,6 +583,12 @@ def update_appointment_status(aid, status):
             if t and t[0] % 5 == 0 and t[0] > 0:
                 conn.execute("INSERT INTO coupons (teacher_id) VALUES (?)", (amt["teacher_id"],))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 def get_teacher_appointments(tid):
@@ -562,6 +616,12 @@ def auto_pay_overdue():
         conn.execute("INSERT OR IGNORE INTO late_payments (appointment_id,parent_id,teacher_id,days_late,compensation) VALUES (?,?,?,1,?)",
             (aid, pid, tid, comp))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 # ── Feedback ──
@@ -575,6 +635,12 @@ def add_feedback(aid, frm, to, rating, content):
             conn.execute("UPDATE teachers SET rating_total=rating_total+?,rating_count=rating_count+1 WHERE id=?",
                 (rating, a["teacher_id"]))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 def get_feedback_for_teacher(tid):
@@ -611,6 +677,12 @@ def create_withdrawal(tid, amount, account_type, account_info):
     conn.execute("INSERT INTO withdrawals (teacher_id,amount,account_type,account_info) VALUES (?,?,?,?)",
         (tid,amount,account_type,account_info))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
     return True, None
 
@@ -632,6 +704,12 @@ def process_withdrawal(wid, status):
         if status == 'completed':
             conn.execute("UPDATE earnings SET status='withdrawn' WHERE teacher_id=? AND status='pending'", (w["teacher_id"],))
         conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 # ── Coupons ──
@@ -672,6 +750,12 @@ def add_verification_doc(user_type, user_id, doc_type, filename, filepath):
     conn.execute("INSERT INTO verification_docs (user_type,user_id,doc_type,filename,filepath) VALUES (?,?,?,?,?)",
         (user_type, user_id, doc_type, filename, filepath))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 def get_verification_docs(user_type=None, user_id=None):
@@ -689,6 +773,12 @@ def update_verification_status(doc_id, status):
     conn = get_db()
     conn.execute("UPDATE verification_docs SET status=?,reviewed_at=datetime('now','localtime') WHERE id=?", (status,doc_id))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 # ── Payment Accounts ──
@@ -852,6 +942,12 @@ def add_to_blacklist(user_type, ref_id, reason, admin_id):
         (user_type,ref_id,reason,admin_id))
     conn.execute("UPDATE users SET is_active=0 WHERE role=? AND ref_id=?", (user_type,ref_id))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 def remove_from_blacklist(bl_id):
@@ -861,6 +957,12 @@ def remove_from_blacklist(bl_id):
         conn.execute("UPDATE users SET is_active=1 WHERE role=? AND ref_id=?", (b["user_type"],b["ref_id"]))
         conn.execute("DELETE FROM blacklist WHERE id=?", (bl_id,))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 # ── Appointments ──
@@ -895,6 +997,12 @@ def update_appointment_status(aid, status):
             if t and t[0] % 5 == 0 and t[0] > 0:
                 conn.execute("INSERT INTO coupons (teacher_id) VALUES (?)", (amt["teacher_id"],))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 def get_teacher_appointments(tid):
@@ -922,6 +1030,12 @@ def auto_pay_overdue():
         conn.execute("INSERT OR IGNORE INTO late_payments (appointment_id,parent_id,teacher_id,days_late,compensation) VALUES (?,?,?,1,?)",
             (aid, pid, tid, comp))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 # ── Feedback ──
@@ -935,6 +1049,12 @@ def add_feedback(aid, frm, to, rating, content):
             conn.execute("UPDATE teachers SET rating_total=rating_total+?,rating_count=rating_count+1 WHERE id=?",
                 (rating, a["teacher_id"]))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 def get_feedback_for_teacher(tid):
@@ -971,6 +1091,12 @@ def create_withdrawal(tid, amount, account_type, account_info):
     conn.execute("INSERT INTO withdrawals (teacher_id,amount,account_type,account_info) VALUES (?,?,?,?)",
         (tid,amount,account_type,account_info))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
     return True, None
 
@@ -992,6 +1118,12 @@ def process_withdrawal(wid, status):
         if status == 'completed':
             conn.execute("UPDATE earnings SET status='withdrawn' WHERE teacher_id=? AND status='pending'", (w["teacher_id"],))
         conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 # ── Coupons ──
@@ -1032,6 +1164,12 @@ def add_verification_doc(user_type, user_id, doc_type, filename, filepath):
     conn.execute("INSERT INTO verification_docs (user_type,user_id,doc_type,filename,filepath) VALUES (?,?,?,?,?)",
         (user_type, user_id, doc_type, filename, filepath))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 def get_verification_docs(user_type=None, user_id=None):
@@ -1049,6 +1187,12 @@ def update_verification_status(doc_id, status):
     conn = get_db()
     conn.execute("UPDATE verification_docs SET status=?,reviewed_at=datetime('now','localtime') WHERE id=?", (status,doc_id))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 # ── Payment Accounts ──
@@ -1239,6 +1383,12 @@ def delete_parent(parent_id, email):
     if n > 0:
         conn.execute("UPDATE users SET is_active=0 WHERE role='parent' AND ref_id=?", (parent_id,))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
     return n > 0
 
@@ -1255,6 +1405,12 @@ def admin_delete_parent(parent_id):
     conn.execute("DELETE FROM parents WHERE id=?", (parent_id,))
     conn.execute("DELETE FROM users WHERE role='parent' AND ref_id=?", (parent_id,))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 
@@ -1274,6 +1430,12 @@ def admin_delete_teacher(teacher_id):
     conn.execute("DELETE FROM teachers WHERE id=?", (teacher_id,))
     conn.execute("DELETE FROM users WHERE role='teacher' AND ref_id=?", (teacher_id,))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 
@@ -1318,6 +1480,22 @@ def get_last_lesson_for_appointment(aid):
     return dict(r) if r else None
 
 
+def add_notification(user_type, user_id, title, message="", link=""):
+    """添加通知"""
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO notifications (user_type,user_id,title,message,link) VALUES (?,?,?,?,?)",
+        (user_type, user_id, title, message, link)
+    )
+    conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
+    conn.close()
+
 def end_lesson(token):
     """结束授课 - 老师结束授课后标记课程为已结束，通知家长"""
     conn = get_db()
@@ -1332,23 +1510,12 @@ def end_lesson(token):
     conn.close()
     
     # Send notification to parent
-    from database import add_notification
     add_notification("parent", lesson["parent_id"],
         f"第{lesson['lesson_number']}节课已结束授课",
         f"您的{lesson['subject']}课第{lesson['lesson_number']}节已由老师确认结束授课",
         "/parent/center")
     
     return lesson
-
-def add_notification(user_type, user_id, title, message="", link=""):
-    """添加通知"""
-    conn = get_db()
-    conn.execute(
-        "INSERT INTO notifications (user_type,user_id,title,message,link) VALUES (?,?,?,?,?)",
-        (user_type, user_id, title, message, link)
-    )
-    conn.commit()
-    conn.close()
 
 def get_notifications(user_type, user_id, limit=50):
     """获取用户的通知列表"""
@@ -1375,6 +1542,12 @@ def mark_notification_read(nid):
     conn = get_db()
     conn.execute("UPDATE notifications SET is_read=1 WHERE id=?", (nid,))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 def mark_all_notifications_read(user_type, user_id):
@@ -1383,6 +1556,12 @@ def mark_all_notifications_read(user_type, user_id):
     conn.execute("UPDATE notifications SET is_read=1 WHERE user_type=? AND user_id=? AND is_read=0",
         (user_type, user_id))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
 
 def delete_notification(nid):
@@ -1390,4 +1569,10 @@ def delete_notification(nid):
     conn = get_db()
     conn.execute("DELETE FROM notifications WHERE id=?", (nid,))
     conn.commit()
+    # Add ended_at column if missing (migration)
+    try:
+        conn.execute("ALTER TABLE lessons ADD COLUMN ended_at TEXT")
+        conn.commit()
+    except:
+        pass
     conn.close()
