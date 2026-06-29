@@ -1,0 +1,48 @@
+{% extends "base.html" %}{% block title %}账号管理{% endblock %}{% block content %}
+<style>
+.account-page{max-width:700px;margin:32px auto}
+.profile-card{background:linear-gradient(135deg,#6b4fa0,#8b6fbf);border-radius:20px;padding:40px;text-align:center;color:#fff;margin-bottom:24px}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;margin:0 auto 16px;backdrop-filter:blur(8px)}
+.profile-card h2{font-size:1.4rem;margin-bottom:4px}
+.profile-card .role-badge{display:inline-block;padding:4px 14px;border-radius:20px;background:rgba(255,255,255,.15);font-size:.78rem;font-weight:500}
+.settings-section{background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px}
+.settings-section h3{font-size:.95rem;color:var(--text);margin-bottom:16px;font-weight:600}
+.settings-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.settings-item:last-child{border-bottom:none}
+.settings-item .label{font-size:.88rem;color:var(--text2)}.settings-item .value{font-size:.88rem;color:var(--text);font-weight:500}
+.account-actions{display:flex;gap:12px;justify-content:center;margin-top:20px}
+.account-actions .btn{min-width:120px}
+</style>
+<div class="account-page">
+<div class="profile-card">
+<div class="profile-avatar">{{ info.name[:1] if info and info.name else '?' }}</div>
+<h2>{{ info.name if info else '用户' }}</h2>
+<span class="role-badge">{{ '教师' if user_type=='teacher' else '家长' }}</span>
+</div>
+
+<div class="settings-section">
+<h3>个人设置</h3>
+<div class="settings-item"><span class="label">用户名</span><span class="value">{{ info.username if info else '' }}</span></div>
+<div class="settings-item"><span class="label">手机号</span><span class="value">{{ info.phone if info else '未绑定' }}</span></div>
+<div class="settings-item"><span class="label">{{ '学校' if user_type=='teacher' else '学生年级' }}</span><span class="value">{{ info.school if info and info.school else info.grade if info else '未设置' }}</span></div>
+<div class="settings-item"><span class="label">地区</span><span class="value">{{ info.city if info and info.city else '未设置' }}</span></div>
+</div>
+
+<div class="settings-section">
+<h3>收付款账户</h3>
+{% if accounts %}
+{% for a in accounts %}
+<div class="settings-item"><span class="label">{{ '支付宝' if a.account_type=='alipay' else '微信' }}</span><span class="value">{{ a.account_name }}</span></div>
+{% endfor %}
+{% else %}
+<div class="settings-item"><span class="label">暂无绑定</span><span class="value"><a href="/settings/payment">去绑定 →</a></span></div>
+{% endif %}
+</div>
+
+<div class="account-actions">
+<a href="/{{ 'teacher/center' if user_type=='teacher' else 'parent/center' }}" class="btn btn-primary">{{ '家教中心' if user_type=='teacher' else '家校中心' }}</a>
+<a href="/notifications" class="btn" style="border:1px solid var(--border);background:#fff;color:var(--text2)">通知中心</a>
+<a href="/logout" class="btn" style="border:1px solid #fecaca;background:#fef2f2;color:var(--error)">退出登录</a>
+</div>
+</div>
+{% endblock %}

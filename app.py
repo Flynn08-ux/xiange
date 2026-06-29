@@ -18,6 +18,8 @@ from database import (
     save_sms_code, verify_sms_code, phone_exists, get_user_by_phone_role, update_user_password,
     create_contract, get_contract, add_verification_doc, get_verification_docs,
     update_verification_status, save_payment_account, get_payment_accounts,
+    add_notification, get_notifications, get_unread_notification_count,
+    mark_notification_read, mark_all_notifications_read, delete_notification,
 )
 from regions import get_provinces, region_info
 from universities import UNIVERSITIES
@@ -234,6 +236,7 @@ def login():
             db.execute("UPDATE users SET session_token=? WHERE id=?", (tok, user["id"]))
             db.commit(); db.close()
             session["user_id"] = user["id"]
+            session["user_name"] = user.get("name", username)
             session["role"] = user["role"]
             session["ref_id"] = user["ref_id"]
             session["username"] = username
@@ -335,7 +338,7 @@ def parent_apply(tid):
                 return render_template("apply.html", teacher=teacher, provinces=get_provinces(), grades=GRADES, data=data), 400
             aid = create_appointment(tid, pid, data["subjects"], data["budget"])
             flash("\u7533\u8bf7\u5df2\u63d0\u4ea4\uff01\u8bf7\u7b49\u5f85\u8001\u5e08\u786e\u8ba4", "success")
-            session["user_id"] = 0; session["role"] = "parent"; session["ref_id"] = pid
+            session["user_id"] = 0; session["user_name"] = "家长"; session["role"] = "parent"; session["ref_id"] = pid
             return redirect(url_for("parent_center"))
         except Exception as e:
             flash(f"\u63d0\u4ea4\u5931\u8d25\uff1a{e}", "error")
@@ -787,6 +790,7 @@ def parent_register():
             user = login_user(d["username"], d["password"])
             if user:
                 session["user_id"] = user["id"]
+                session["user_name"] = user.get("name", "家长")
                 session["role"] = "parent"
                 session["ref_id"] = pid
                 session.permanent = True
@@ -961,6 +965,60 @@ def admin_confirm_order(oid):
     conn.commit(); conn.close()
     flash("\u5df2\u786e\u8ba4\u6536\u6b3e","success")
     return redirect(url_for("admin_orders"))
+
+# ── Account Management ──
+@app.route("/account")
+@login_required()
+def account_page():
+    user_type = session["role"]
+    uid = session["ref_id"]
+    if user_type == "teacher":
+        from database import get_teacher
+        info = get_teacher(uid)
+    else:
+        info = get_parent(uid)
+    accounts = get_payment_accounts(user_type, uid)
+    return render_template("account.html", info=info, accounts=accounts,
+        user_type=user_type, uid=uid, user=session.get("user_id"), role=session.get("role"))
+
+# ── Notifications Center ──
+@app.route("/notifications")
+@login_required()
+def notifications_page():
+    user_type = session["role"]
+    uid = session["ref_id"]
+    notes = get_notifications(user_type, uid)
+    unread = get_unread_notification_count(user_type, uid)
+    return render_template("notifications.html", notes=notes, unread=unread,
+        user=session.get("user_id"), role=session.get("role"))
+
+@app.route("/notifications/read/<int:nid>", methods=["POST"])
+@login_required()
+def notification_read(nid):
+    mark_notification_read(nid)
+    return "", 204
+
+@app.route("/notifications/read-all", methods=["POST"])
+@login_required()
+def notification_read_all():
+    mark_all_notifications_read(session["role"], session["ref_id"])
+    return "", 204
+
+@app.route("/notifications/delete/<int:nid>", methods=["POST"])
+@login_required()
+def notification_delete(nid):
+    delete_notification(nid)
+    return "", 204
+
+@app.route("/api/notifications/count")
+@login_required()
+def api_notification_count():
+    try:
+        count = get_unread_notification_count(session["role"], session["ref_id"])
+        return jsonify({"count": count})
+    except:
+        return jsonify({"count": 0})
+
 if __name__ == "__main__":
     print(f"  \u5f26\u6b4c server \u2192 http://127.0.0.1:" + str(os.environ.get("PORT", 8080)))
     print(f"  \u7ba1\u7406\u5458\uff1aadmin / xiange2024")

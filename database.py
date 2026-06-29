@@ -178,6 +178,16 @@ def init_db():
             created_at TEXT DEFAULT (datetime('now','localtime')),
             confirmed_at TEXT
         );
+        CREATE TABLE IF NOT EXISTS notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_type TEXT NOT NULL,
+        user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        message TEXT,
+        link TEXT,
+        is_read INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now','localtime'))
+        );
         CREATE TABLE IF NOT EXISTS lessons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             appointment_id INTEGER NOT NULL,
@@ -1261,5 +1271,59 @@ def admin_delete_teacher(teacher_id):
     conn.execute("DELETE FROM verification_docs WHERE user_type='teacher' AND user_id=?", (teacher_id,))
     conn.execute("DELETE FROM teachers WHERE id=?", (teacher_id,))
     conn.execute("DELETE FROM users WHERE role='teacher' AND ref_id=?", (teacher_id,))
+    conn.commit()
+    conn.close()
+
+
+# ── Notifications ──
+def add_notification(user_type, user_id, title, message="", link=""):
+    """添加通知"""
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO notifications (user_type,user_id,title,message,link) VALUES (?,?,?,?,?)",
+        (user_type, user_id, title, message, link)
+    )
+    conn.commit()
+    conn.close()
+
+def get_notifications(user_type, user_id, limit=50):
+    """获取用户的通知列表"""
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM notifications WHERE user_type=? AND user_id=? ORDER BY created_at DESC LIMIT ?",
+        (user_type, user_id, limit)
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def get_unread_notification_count(user_type, user_id):
+    """获取未读通知数量"""
+    conn = get_db()
+    row = conn.execute(
+        "SELECT COUNT(*) FROM notifications WHERE user_type=? AND user_id=? AND is_read=0",
+        (user_type, user_id)
+    ).fetchone()
+    conn.close()
+    return row[0] if row else 0
+
+def mark_notification_read(nid):
+    """标记通知为已读"""
+    conn = get_db()
+    conn.execute("UPDATE notifications SET is_read=1 WHERE id=?", (nid,))
+    conn.commit()
+    conn.close()
+
+def mark_all_notifications_read(user_type, user_id):
+    """标记所有通知为已读"""
+    conn = get_db()
+    conn.execute("UPDATE notifications SET is_read=1 WHERE user_type=? AND user_id=? AND is_read=0",
+        (user_type, user_id))
+    conn.commit()
+    conn.close()
+
+def delete_notification(nid):
+    """删除通知"""
+    conn = get_db()
+    conn.execute("DELETE FROM notifications WHERE id=?", (nid,))
     conn.commit()
     conn.close()

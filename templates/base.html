@@ -18,14 +18,63 @@
                 <a href="/teachers">找老师</a>
                 <a href="/register">成为老师</a>
                 <a href="/parent/register">成为家长</a>
-                {% if user and role == 'teacher' %}<a href="/teacher/center">家教中心</a>{% endif %}
-                {% if user and role == 'parent' %}<a href="/parent/center">家校中心</a>{% endif %}
-                {% if not user %}<a href="/login">登录</a>{% endif %}
-                {% if user %}<a href="/logout">退出</a>{% endif %}
+                {% if not user %}
+                <a href="/login" class="nav-admin">登录</a>
+                {% endif %}
                 <a href="/admin/login" class="nav-admin">管理</a>
             </nav>
+            {% if user %}
+            <div class="user-menu" id="userMenu">
+                <button class="user-menu-trigger" onclick="toggleUserMenu()">
+                    <span class="user-avatar">{{ session.get('user_name','?')[:1] }}</span>
+                    <span class="user-name">{{ session.get('user_name','用户') }}</span>
+                    <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-left:4px"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="user-menu-dropdown" id="userMenuDropdown">
+                    <a href="/account"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>账号管理</a>
+                    <a href="/{{ 'teacher/center' if role=='teacher' else 'parent/center' }}"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ '家教中心' if role=='teacher' else '家校中心' }}</a>
+                    <a href="/notifications" class="notif-link"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v1M3 7a5 5 0 0110 0v3l1 1H2l1-1V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 12a2 2 0 004 0" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>通知中心<span class="notif-badge-sm" id="notifBadgeSm" style="display:none">0</span></a>
+                    <div class="menu-divider"></div>
+                    <a href="/logout" style="color:var(--error)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>退出登录</a>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </header>
+    <script>
+    function toggleUserMenu() {
+        document.getElementById('userMenuDropdown').classList.toggle('show');
+    }
+    document.addEventListener('click', function(e) {
+        var menu = document.getElementById('userMenu');
+        if (menu && !menu.contains(e.target)) {
+            var dd = document.getElementById('userMenuDropdown');
+            if (dd) dd.classList.remove('show');
+        }
+    });
+    function updateNotifCount() {
+        fetch('/api/notifications/count').then(r=>r.json()).then(d=>{
+            var badge = document.getElementById('notifBadge');
+            var badgeSm = document.getElementById('notifBadgeSm');
+            if (d.count > 0) {
+                badge.textContent = d.count > 99 ? '99+' : d.count;
+                badge.style.display = '';
+                if (badgeSm) {
+                    badgeSm.textContent = d.count > 99 ? '99+' : d.count;
+                    badgeSm.style.display = '';
+                }
+            } else {
+                badge.style.display = 'none';
+                if (badgeSm) badgeSm.style.display = 'none';
+            }
+        }).catch(function(){});
+    }
+    {% if user %}
+    updateNotifCount();
+    setInterval(updateNotifCount, 30000);
+    {% endif %}
+    </script>
     <main class="container">
         {% with msgs = get_flashed_messages(with_categories=true) %}
             {% if msgs %}{% for c,m in msgs %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}{% endif %}
