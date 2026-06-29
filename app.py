@@ -401,21 +401,17 @@ def admin_login_view():
         password = request.form.get("password","").strip()
         key = request.form.get("key","").strip()
         a = admin_login(username, password)
+        if a and key == "0608":
+            session["admin_id"] = a["id"]
+            session["admin_name"] = a["name"]
+            flash("欢迎回来，" + a["name"], "success")
+            return redirect(url_for("admin_dashboard"))
         if a:
-            if key == "0608":
-                tok = uuid.uuid4().hex
-                db = get_db()
-                db.execute("UPDATE admins SET session_token=? WHERE id=?", (tok, a["id"]))
-                db.commit(); db.close()
-                session["admin_id"] = a["id"]
-                session["admin_session_token"] = tok
-                session.permanent = True
-                flash("欢迎回来，" + a["name"], "success")
-                return redirect(url_for("admin_dashboard"))
-            flash("密钥错误，请输入正确的安全密钥", "error")
-            return render_template("admin_login.html")
-        flash("用户名或密码错误", "error")
+            flash("\u5bc6\u94a5\u9519\u8bef", "error")
+        else:
+            flash("\u7528\u6237\u540d\u6216\u5bc6\u7801\u9519\u8bef", "error")
     return render_template("admin_login.html")
+
 @app.route("/admin/logout")
 def admin_logout():
     session.pop("admin_id", None)
