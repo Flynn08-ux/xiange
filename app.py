@@ -128,6 +128,67 @@ def admin_ctx():
 @app.route("/admin")
 @admin_required
 def admin_dashboard():
+    html = """<!DOCTYPE html><html lang=zh-CN>
+<head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>弦歌 · 管理后台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#f5f0ff 0%,#e8e0f0 100%);min-height:100vh;font-family:system-ui,-apple-system,sans-serif}
+.header{background:linear-gradient(135deg,#6b4fa0,#8b6fbf);color:#fff;padding:20px 28px}
+.header h1{font-size:1.5rem;font-weight:600;margin-bottom:4px}
+.header p{font-size:.85rem;opacity:.8}
+.nav{display:flex;flex-wrap:wrap;gap:4px;padding:12px 28px;background:#fff;border-bottom:1px solid #e0d8ea}
+.nav a{padding:8px 14px;border-radius:8px;text-decoration:none;font-size:.85rem;color:#4a3a5a;transition:all .2s}
+.nav a:hover{background:#eee8f5;color:#6b4fa0}
+.nav a.active{background:#6b4fa0;color:#fff}
+.content{max-width:1100px;margin:0 auto;padding:24px 28px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:#fff;border:1px solid #e0d8ea;border-radius:14px;padding:24px 20px;text-align:center;transition:transform .15s,box-shadow .15s}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(107,79,160,.12)}
+.stat-num{font-size:2rem;font-weight:800;color:#6b4fa0}
+.stat-lbl{font-size:.8rem;color:#8a7a9a;margin-top:4px}
+.features{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.feat-card{background:#fff;border:1px solid #e0d8ea;border-radius:14px;padding:20px;transition:transform .15s,box-shadow .15s}
+.feat-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(107,79,160,.1)}
+.feat-card h3{font-size:.95rem;color:#4a3a5a;margin-bottom:8px}
+.feat-card p{font-size:.8rem;color:#8a7a9a;line-height:1.5}
+.feat-card a{display:inline-block;margin-top:10px;padding:6px 16px;background:linear-gradient(135deg,#6b4fa0,#8b6fbf);color:#fff;border-radius:8px;text-decoration:none;font-size:.8rem}
+.feat-card a:hover{opacity:.9}
+</style></head><body>
+<div class=header><h1>弦歎 · 管理后台</h1><p>欢迎回来，管理员</p></div>
+<div class=nav>
+<a href=/admin class=active>概览</a>
+<a href=/admin/teachers>教师管理</a>
+<a href=/admin/parents>家长管理</a>
+<a href=/admin/admins>管理员管理</a>
+<a href=/admin/appointments>申请管理</a>
+<a href=/admin/verification>认证管理</a>
+<a href=/admin/fees>费用管理</a>
+<a href=/admin/blacklist>黑名单</a>
+<a href=/admin/qrcodes>收款码</a>
+<a href=/admin/orders>订单</a>
+<a href=/admin/logout>退出</a>
+</div>
+<div class=content>
+<div class=stats-grid>
+<div class=stat-card><div class=stat-num>0</div><div class=stat-lbl>认证教师</div></div>
+<div class=stat-card><div class=stat-num>0</div><div class=stat-lbl>家长用户</div></div>
+<div class=stat-card><div class=stat-num>0</div><div class=stat-lbl>已成交</div></div>
+<div class=stat-card><div class=stat-num>0</div><div class=stat-lbl>管理员</div></div>
+<div class=stat-card><div class=stat-num>0</div><div class=stat-lbl>收入（元）</div></div>
+<div class=stat-card><div class=stat-num>0</div><div class=stat-lbl>待提现</div></div>
+</div>
+<div class=features>
+<div class=feat-card><h3>家教中心</h3><p>管理每位教师的教学详情、学生信息、课程记录和收入情况</p><a href=/admin/teachers>进入家教中心</a></div>
+<div class=feat-card><h3>家校中心</h3><p>查看家长与学生的学习需求、课程评价和反馈</p><a href=/admin/parents>进入家校中心</a></div>
+<div class=feat-card><h3>管理员管理</h3><p>添加、删除管理员，实时查看管理团队</p><a href=/admin/admins>管理管理员</a></div>
+<div class=feat-card><h3>费用与提现</h3><p>查看教师信息费、管理提现申请和补贴</p><a href=/admin/fees>查看费用</a></div>
+<div class=feat-card><h3>黑名单</h3><p>将违规用户加入黑名单，禁止其操作</p><a href=/admin/blacklist>管理黑名单</a></div>
+<div class=feat-card><h3>收款码与订单</h3><p>设置微信、支付宝收款码，确认付款订单</p><a href=/admin/qrcodes>管理收款</a></div>
+</div></div></body></html>"""
+    return html, 200, {"Content-Type": "text/html; charset=utf-8"}
+
+def admin_dashboard():
     html = "<!DOCTYPE html><html lang=zh-CN><head><meta charset=UTF-8>"
     html += "<title>弦歌管理后台</title><style>"
     html += "body{font-family:sans-serif;background:#f5f3f8;padding:20px}"
