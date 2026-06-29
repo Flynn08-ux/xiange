@@ -951,9 +951,13 @@ def payment_report():
 @admin_required
 def admin_orders():
     conn = get_db()
-    rows = conn.execute("SELECT * FROM payment_orders ORDER BY created_at DESC").fetchall()
+    try:
+        rows = conn.execute("SELECT * FROM payment_orders ORDER BY created_at DESC").fetchall()
+        orders = [dict(r) for r in rows]
+    except:
+        orders = []
     conn.close()
-    return render_template("admin_orders.html", orders=[dict(r) for r in rows], admin=admin_ctx())
+    return render_template("admin_orders.html", orders=orders, admin=admin_ctx())
 
 @app.route("/admin/order/<int:oid>/confirm", methods=["POST"])
 @admin_required
