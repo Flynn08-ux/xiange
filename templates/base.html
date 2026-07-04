@@ -8,8 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 </head>
 <body>
-    <div class="particles"><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div></div>
-    
     <header class="site-header">
         <div class="container header-inner">
             <div class="logo-wrap"><a href="/" class="logo"><span>弦</span>歌</a><span class="logo-tag">教育的桥梁</span>{% if admin and not user %}<span class="admin-badge">👑 {{ admin.name }}</span>{% endif %}</div>
@@ -17,9 +15,9 @@
                 <a href="/">首页</a>
                 <a href="/teachers">找老师</a>
                 <a href="/register">成为老师</a>
-                <a href="/parent/register">成为家长</a>
+                <a href="/parent/register">家长入口</a>
                 {% if not user %}
-                <a href="/login" class="nav-admin">登录</a>
+                <a href="/login" class="nav-item-cta">登录</a>
                 {% endif %}
                 <a href="/admin/login" class="nav-admin">管理</a>
             </nav>
