@@ -34,7 +34,10 @@
     <div><h1>{{ parent.parent_name }} 的家校中心</h1>
         <p style="color:var(--text-secondary);font-size:0.9rem">家长 {{ parent.email }}{% if parent.late_count and parent.late_count > 0 %} | 逾期 {{ parent.late_count }} 次{% endif %}</p>
     </div>
-    <div class="center-nav"><a href="/parent/center" class="active">总览</a><a href="/find-teachers">找老师</a> · <a href="/teachers">浏览全部</a></div>
+    <div style="display:flex;align-items:center;gap:8px">
+        <div class="center-nav"><a href="/parent/center" class="active">总览</a><a href="/find-teachers">找老师</a> · <a href="/teachers">浏览全部</a></div>
+        <a href="/notifications" class="header-notif-btn" title="通知中心"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="header-notif-count" id="headerNotifCount" style="display:none">0</span></a>
+    </div>
 </div>
 
 <h2 class="section-title">我的申请</h2>

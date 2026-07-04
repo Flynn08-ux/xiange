@@ -55,6 +55,7 @@
         fetch('/api/notifications/count').then(r=>r.json()).then(d=>{
             var badge = document.getElementById('notifBadge');
             var badgeSm = document.getElementById('notifBadgeSm');
+            var headerBadge = document.getElementById('headerNotifCount');
             if (d.count > 0) {
                 badge.textContent = d.count > 99 ? '99+' : d.count;
                 badge.style.display = '';
@@ -62,9 +63,14 @@
                     badgeSm.textContent = d.count > 99 ? '99+' : d.count;
                     badgeSm.style.display = '';
                 }
+                if (headerBadge) {
+                    headerBadge.textContent = d.count > 99 ? '99+' : d.count;
+                    headerBadge.style.display = '';
+                }
             } else {
                 badge.style.display = 'none';
                 if (badgeSm) badgeSm.style.display = 'none';
+                if (headerBadge) headerBadge.style.display = 'none';
             }
         }).catch(function(){});
     }

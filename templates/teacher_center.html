@@ -21,7 +21,10 @@
     <div><h1>{{ teacher.name }} 的家教中心</h1>
         <p style="color:var(--text-secondary);font-size:0.9rem">已完成 {{ stats.completed }} 次家教 | 评分数 {{ teacher.rating_count }}</p>
     </div>
-    <div class="center-nav"><a href="/teacher/center" class="active">总览</a><a href="/teachers">找家长</a><a href="/find-students">找学生</a><a href="/bought-leads">已购线索</a></div>
+    <div style="display:flex;align-items:center;gap:8px">
+        <div class="center-nav"><a href="/teacher/center" class="active">总览</a><a href="/teachers">找家长</a><a href="/find-students">找学生</a><a href="/bought-leads">已购线索</a></div>
+        <a href="/notifications" class="header-notif-btn" title="通知中心"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="header-notif-count" id="headerNotifCount" style="display:none">0</span></a>
+    </div>
 </div>
 
 <div class="stats-mini">

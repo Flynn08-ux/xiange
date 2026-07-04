@@ -235,6 +235,26 @@ def logout():
     flash("\u5df2\u9000\u51fa\u767b\u5f55", "info")
     return redirect(url_for("index"))
 
+@app.route("/admin/apply", methods=["GET","POST"])
+def admin_apply():
+    if request.method == "POST":
+        name = request.form.get("name","").strip()
+        email = request.form.get("email","").strip()
+        reason = request.form.get("reason","").strip()
+        if not name or not email:
+            flash("请填写姓名和邮箱","error")
+        else:
+            admins = get_all_admins()
+            for a in admins:
+                add_notification("admin", a["id"],
+                    f"管理员申请：{name}",
+                    f"{name}（{email}）申请成为管理员。理由：{reason}",
+                    "/admin/admins")
+            flash("申请已提交，管理员会尽快处理","success")
+        return redirect(url_for("admin_apply"))
+    return render_template("admin_apply.html")
+
+
 # ── Teacher Registration ──
 @app.route("/register", methods=["GET","POST"])
 def register():
@@ -465,6 +485,7 @@ def admin_logout():
     session.pop("admin_session_token", None)
     flash("\u5df2\u9000\u51fa\u7ba1\u7406\u540e\u53f0","info")
     return redirect(url_for("index"))
+
 
 def admin_required(f):
     @wraps(f)

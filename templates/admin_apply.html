@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}申请成为管理员{% endblock %}{% block content %}
+<div class="login-page">
+    <h1 class="page-title" style="text-align:center">申请成为管理员</h1>
+    <p style="text-align:center;font-size:.82rem;color:var(--text2);margin-bottom:20px">
+        填写信息后提交申请，现有管理员会收到通知
+    </p>
+    <form class="login-form" method="POST">
+        <div class="form-group"><label>姓名</label><input type="text" name="name" required placeholder="你的姓名"></div>
+        <div class="form-group"><label>邮箱</label><input type="email" name="email" required placeholder="联系邮箱"></div>
+        <div class="form-group"><label>申请理由</label><textarea name="reason" rows="4" placeholder="为什么想成为管理员？" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;background:var(--bg);font-family:inherit;resize:vertical"></textarea></div>
+        <button type="submit" class="btn btn-primary btn-large">提交申请</button>
+        <p class="login-hint"><a href="/admin/login">返回管理员登录</a></p>
+    </form>
+</div>
+{% endblock %}
